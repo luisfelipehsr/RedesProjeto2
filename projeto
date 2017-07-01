@@ -124,7 +124,7 @@ servidor lixo:
 
 		 pode avisar de tempos em tempos q recebeu x mensagens e de quais carros.
 
-		 SEM THREADS OU FORK:
+		 SEM THREADS OU FORK: Eh um cliente na pratica.
 
 		 conecte ao servidor rapido.
 		 lista carros = []
@@ -164,4 +164,10 @@ servidor lixo:
 					  
 servidor bom:
 		 
+		 Utilizando select()
+
+		 deve atualizar seu proprio tempo.
+		 com ele comparar velocidade dos carros.
+		 realiza processamentos quando as requisicoes chegam.
+		 o primeiro "cliente" eh sempre o servidor lerdo.
 		 
