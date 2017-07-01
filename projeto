@@ -1,0 +1,167 @@
+estrutura para mensagens
+
+use clock_gettime para obter tempo em nanosegundos. converta para ms
+
+script bash : recebe argumentos e faz os treco
+
+
+servidor rapido:
+
+
+  abra conexoes com servidor lerdo e
+  abra porta para multiplas conexoes com carros
+
+  para cada mensagem que chegar:
+       se for servidor lerdo:
+	   	  repasse para carro alvo
+		  
+	   se carro:
+	   	  se mensagem for de seguranca:
+	      	 cheque por colisao com demais carros
+			 se tiver colisao:
+			     emita chamada de ambulancia para todos
+				                           \carros
+			 sem colisao:
+			     faca nada
+		  se mensagem for entretenimento/conforto
+		     repassa mensagem pro servidor lerdo
+
+
+
+
+
+carro:
+
+
+   "precisa ter jeito de saber o tempo atual"
+            saber que hora ele pode voltar a andar"
+		    atualizar a propria posicao
+
+			printar igual louco se ta ativo chamar ambulancia
+			gerar pacotes de entretenimento.
+			receber pacotes tb
+			enviar pacotes de seguranca e receber eles
+			mudar aleatoriamente sua velocidade se NAO ESTA ESPERANDO
+			reckless = muda ate se esta parado
+			
+			tem que enviar as mensagens a cada x segundos
+
+			quando vc pede pra receber mensagem ele trava esperando
+			
+
+
+			faz coisas
+			envia mensagens
+			recebe uma
+				   faz o q tem q fazer
+				   pode parar de esperar? SO_RCVTIMEO para parar de esperar
+
+
+		    tempo ultima seguranca
+			tempo ultima entretenimento
+			tempo ultima conforto
+			tempo ultima atualizacao
+
+
+carro {
+
+			ta na hora(tipo intervalo, tempo x, tempo atual):
+ 			   tempo atual - tempo x
+			   se eh atualizacao ou seguranca:
+			   	  tempo atual- tempo x >= 1
+			   se eh entretenimento:
+			   	  tempo atual - tempo x >= 0.03
+			   se eh conforto:
+                  tempo atual - tempo x >= 0.05
+
+				essas coisas retornam true ou false
+
+
+
+			enquanto() :
+				checar a hora
+
+				se nao esta esperando E nao eh reckless E ta na hora:
+				   atualiza velocidade (pode receber um incremento rand)
+				   atualiza posicao
+				   atualiza tempo da ultima atualizacao
+				se eh pra chamar a ambulancia:
+				   print("VOU BOTAR NO YOUTUBE")
+				
+				se ta na hora de seguranca:
+				   envia mensagem de seguranca
+				 
+				se ta na hora de entretenimento:
+				   gera mensagem aleatoria de entretenimento
+				   manda mensagem
+				se conforto:
+				   mesmo de cima
+
+				recebe uma mensagem (timeout de 0.01, vulgo 10ms good ping)
+				se recebeu mensagem:
+				    se eh de seguranca:
+				        se eh de frear:
+					  	    velocidade <- 0
+						se eh de acelerar:
+						    velocidade + 5
+					    se eh de chamar ambulancia:
+						    chamar ambulancia <- True
+					se eh de entretenimento:
+					   print("Jogo para quem esta dirigindo recebeu msg")
+					se eh de lazer/conforto:
+					   print("Pessoa que voce nao vai pegar postou foto")
+			 
+                se deu timeout:
+				   faca nada
+			    volta loop
+}
+
+
+servidor lixo:
+		 
+		 precisa receber mensagem de entretenimento e conforto
+		 envia-las de volta com 200ms de atraso.
+
+		 pode avisar de tempos em tempos q recebeu x mensagens e de quais carros.
+
+		 SEM THREADS OU FORK:
+
+		 conecte ao servidor rapido.
+		 lista carros = []
+		 lista mensagens = [] /* (mensagem, tempo de chegada) */
+
+		 para cada i em lista mensagens:
+		 	  se lista_mensagens[i] != NULL
+		 	  se tempo_atual - (lista_mensagens[i].tempo_de_chegada) > 0.2s
+			  	 envie lista_mensagens[i].mensagem para servidor.
+				 delete par
+				 lista_mensagens[i] = NULL
+
+		 enquanto() {
+
+		 	pega tempo atual.
+			se ta na hora:
+			   para cada i em lista carros:
+			   		imprima lista carros[i]
+
+			para cada mensagem 
+
+			recebe mensagem() timeout 0.01s
+				   se mensagem for lazer ou entreteni/o
+				   	  muda conteudo de acordo.
+					  guarda mensagem e horario atual numa estrutura.
+
+
+
+
+			   	   filho:
+				   	  se mensagem for lazer:
+				   	  	 responde com mensagem de lazer
+				      se mensagem for entreteni/o:
+				   	     responde com entreteni/o
+					  fecha conexao e vaza.
+				   pai:
+					  
+servidor bom:
+		 
+		 
