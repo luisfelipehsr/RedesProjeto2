@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
+#include <string.h>
 
 #define CLOUD 0
 #define SECURITY 1
@@ -12,6 +13,19 @@
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 200
 #define INTERVAL_UPDATE 1000
+
+typedef struct car {
+	int x, y;
+	int dir, vel;
+} car;
+
+typedef struct message {
+	char TYPE;
+	char MODE;
+	char data[254];
+} message;
+
+
 
 /* estrutura que guarda o ultimo horario de certa acao e seu numero */
 typedef struct time_register {
@@ -92,6 +106,8 @@ void displayActivities(long currentTime, time_register *tr) {
 	}
 }
 
+
+
 int main() {
 	long time, initial_time;
 	int i;
@@ -108,6 +124,28 @@ int main() {
 	buildTimeRegister(&tr, time);
 	time++; // somente para entrar no loop, nao muda a execucao
 
+	// TESTES COM HEADER E DATA, mensagem de tamanho 256, 2 bytes de header
+	printf("%ld\n", sizeof(struct message));
+	char buffer[20];
+	car c, d;
+	char a, b;
+	message m;
+	c.x = 3; c.y = 4; c.dir = 1; c.vel = 64;
+	m.TYPE = SECURITY;
+	memcpy(&m.data, &c, sizeof(car));
+
+	memcpy(&d, &m.data, sizeof(car));
+	memcpy(&a, &m.TYPE, sizeof(char));
+	memcpy(&b, &m.MODE, sizeof(char));
+ 
+	printf("TYPE: %d\nMODE: %d\ndata: %d %d %d %d\n",
+		   a, b, d.x, d.y, d.dir, d.vel);
+
+	
+	strcpy(buffer, "something written\n");
+	printf("%s", buffer+4);
+
+	
 	// imprime atividades realizadas a cada certo intervalo
 	while(time - initial_time < 5000) {
 		
