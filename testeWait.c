@@ -13,12 +13,32 @@
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 200
 #define INTERVAL_UPDATE 1000
+#define CAR_REPORT 0
+#define ACCELERATE 1
+#define STOP 2
+#define CALL_RESCUE 3
 
+
+
+/* Estrutura padrao de mensagem de conforto/lazer */
+typedef struct confort {
+	char[64] url;
+    char[100] text;
+} confort;
+
+/* Estrutura padrao de mensagem de entretenimento */
+typedef struct entertain {
+	char[20] appName;
+	char[20] data;
+} entertain;
+
+// PRECISA MEXER !!!!!!!!!!!!!!!!!!!!
 typedef struct car {
 	int x, y;
 	int dir, vel;
 } car;
 
+/* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {
 	char TYPE;
 	char MODE;
