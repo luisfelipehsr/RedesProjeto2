@@ -18,7 +18,7 @@ def main():
     for i in range(numberCars):
         carParameters = re.findall(r"[-]?[\w]+", carList[i])
         print(carParameters)
-        cmd = ["konsole", "--noclose", "-e", "./carClient", "localhost"]
+        cmd = ["konsole", "--noclose", "-e", "./carClient", "localhost", str(i)]
         for parameter in carParameters:
             cmd += [parameter]
         Popen(cmd)

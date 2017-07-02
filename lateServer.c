@@ -109,6 +109,15 @@ int main(int argc, char * argv[]){
     for (i = 0; i < n_msgs; i++) {
       if (t - msgbuf[i].timestamp >= 2000) {
         /* RESPONDER MENSAGEM */
+        if (msgbuf[i] == ENTERTAINMENT) {
+          strcpy(buf, "Jogo para quem esta dirigindo recebeu msg\0");
+          bytessent = send(s, &buf, MAX_LINE, 0);
+        } else if (msgbuf[i] == CONFORT) {
+          strcpy(buf, "Pessoa que voce nao vai pegar postou foto\0");
+          bytessent = send(s, &buf, MAX_LINE, 0);
+        }
+
+        /*ver como definir carro destinatario/rememtente*/
 
         remove_msg(msgbuf, i--, n_msgs--);
       }

@@ -83,7 +83,7 @@ int main (int argc, char* argv[]) {
 		carNumber = atoi(argv[2]);
 		printf("%d\n", carNumber);
 	} else {
-		printf("ERROR: Two arguments should be provided. %d given.\n", argc-1);
+		printf("ERROR: Ten arguments should be provided. %d given.\n", argc-1);
 		return 0;
 	}
 
