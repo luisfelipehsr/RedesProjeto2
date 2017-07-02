@@ -3,6 +3,7 @@
 #include <math.h>
 #include <limits.h>
 #include <string.h>
+#include <sys/socket.h>
 
 #define CLOUD 0
 #define SECURITY 1
@@ -11,7 +12,7 @@
 #define UPDATE 4
 #define INTERVAL_SECURITY 50
 #define INTERVAL_ENTERTAINMENT 20
-#define INTERVAL_CONFORT 200
+#define INTERVAL_CONFORT 1000
 #define INTERVAL_UPDATE 1000
 #define CAR_REPORT 0
 #define ACCELERATE 1
@@ -41,7 +42,7 @@ typedef struct car {
 /* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {
 	char TYPE;
-	char MODE;
+	char MODIFIER;
 	char data[254];
 } message;
 
