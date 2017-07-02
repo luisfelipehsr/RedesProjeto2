@@ -1,6 +1,6 @@
-/**************************
-****** Servidor TCP *******
-**************************/
+/****************************************
+****** Servidor de baixa latencia *******
+*****************************************/
 #include "header.h"
 
 #define LISTEN_PORT 12345
@@ -16,78 +16,17 @@ int main(int argc, char * argv[]){
   int i, sp, sa, new_s, sockfd, cliente_num, maxfd, nready, clientes[FD_SETSIZE];
   fd_set todos_fds, novo_set;
   int bytessent, bytesreceived;
-
-  struct hostent *late_server_address;
-  struct sockaddr_in socket_late_server;
-  char *host_late_server;
   int len;
 
+
 /*****************************************************************************/
 /*****************************************************************************/
 
-  if (argc != 3) {
+  if (argc != 2) {
     fprintf(stderr, "Numero de argumentos invalido\n");
-    fprintf(stderr, "Use:./fastServer [hostname_do_server_lerdo] [numero_maximo_de_carros]\n");
+    fprintf(stderr, "Use:./fastServer [numero_maximo_de_carros]\n");
     return -1;
 	}
-
-/*****************************************************************************/
-
-  /********************************************/
-  /* CONECTANDO COM SERVIDOR DE ALTA LATENCIA */
-  /********************************************/
-
-
-  host_late_server = argv[1];
-
-	/* tradução de nome para endereço IP */
-	late_server_address = gethostbyname(host_late_server);
-
-  if (late_server_address == NULL) {
-    fprintf(stderr, "Falha na resolucao do nome de servidor lerdo.\n");
-    return -1;
-  }
-
-  printf("Consegui hostbyname\n");
-
-  /* criação da estrutura de dados de endereço */
-  bzero(&buf, MAX_LINE);
-
-  bzero((char *)&socket_late_server, sizeof(socket_late_server));
-  socket_late_server.sin_family = AF_INET;
-  bcopy(host_late_server->h_addr, (char *)&socket_late_server.sin_addr, host_late_server->h_length);
-  socket_late_server.sin_port = htons(SERVER_PORT);
-  len = sizeof(socket_late_server);
-
-  /* criação de socket ativo*/
-  sa = socket(AF_INET, SOCK_STREAM, 0);
-  if (sa == -1) {
-    fprintf(stderr, "Falha na criacao de socket ativo.\n");
-    return -1;
-  }
-
-  printf("Socket Criado\n");
-
-  /* estabelecimento da conexão */
-  if (connect(sa, (struct sockaddr*)&socket_late_server, len) == -1) {
-    fprintf(stderr, "Falha no estabelecimento da conexao.\n");
-    return -1;
-  }
-
-  printf("Conectado\n");
-
-  getsockname(sa, (struct sockaddr*)&socket_late_server, len);
-  printf("\nInformacoes do socket local:\nIP: %s\nPorta: %d\n\n", inet_ntoa((struct in_addr)socket_late_server.sin_addr),socket_late_server.sin_port);
-
-/*****************************************************************************/
-/*****************************************************************************/
-
-
-  /********************************************/
-  /* CONECTANDO COM CLIENTES CARROS ***********/
-  /********************************************/
-
-
 
   /* criação da estrutura de dados de endereço */
   bzero((char *)&cliaddr, sizeof(cliaddr));

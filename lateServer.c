@@ -1,6 +1,6 @@
-/**************************
-****** Cliente TCP *******
-**************************/
+/***************************************
+****** Servidor de alta latencia *******
+****************************************/
 #include "header.h"
 
 #define MAX_MSG_CAR 5
@@ -80,7 +80,8 @@ int main(int argc, char * argv[]){
   printf("\nInformacoes do socket local:\nIP: %s\nPorta: %d\n\n", inet_ntoa((struct in_addr)socket_address.sin_addr),socket_address.sin_port);
 
   tv.tv_sec = 0;
-  tv.tv_usec = 20;
+  tv.tv_usec = 2000; // == 2 ms
+  //timeout de 2ms para o recv
   setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval))
 
   n_cars = argv[2];
@@ -89,10 +90,14 @@ int main(int argc, char * argv[]){
   cars = (car *)calloc(n_cars, sizeof(car));
   msgbuf = (message_buffer *)calloc((MAX_MSG_CAR*n_cars), sizeof(message_buffer));
 
+  strcpy(buf, "Servidor de altalatencia criado!\0");
+  bytessent = send(s, &buf, MAX_LINE, 0);
+
   while (1) {
     bytesreceived = recv(s, &buf, MAX_LINE, 0);
 
-    if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
+    //timeout retorna SOCKET_ERROR
+    if ((bytesreceived != SOCKET_ERROR) && (n_msgs < MAX_MSG_CAR*n_cars)){
       msgbuf[n_msgs].timestamp = get_time();
       msgbuf[n_msgs].msg.TYPE = buf[0];
       msgbuf[n_msgs].msg.MODE = buf[1];
@@ -102,14 +107,13 @@ int main(int argc, char * argv[]){
 
     t = get_time();
     for (i = 0; i < n_msgs; i++) {
-      if (t - msgbuf[i].timestamp >= 200) {
+      if (t - msgbuf[i].timestamp >= 2000) {
         /* RESPONDER MENSAGEM */
 
         remove_msg(msgbuf, i--, n_msgs--);
       }
     }
 
-    bytesreceived = -1;
   }
 
   close(s);
