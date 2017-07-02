@@ -4,6 +4,15 @@ use clock_gettime para obter tempo em nanosegundos. converta para ms
 
 script bash : recebe argumentos e faz os treco
 
+subprocess.Popen: permite abrir multiplos terminais, cada um pode ser um carro diferente
+
+ie.:
+from subprocess import Popen, PIPE
+
+bot1 = Popen(["lxterminal", "-e",  "python3", "-i", "/home/johngr/psdirc/TestBot1.py"], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+bot2 = Popen(["lxterminal", "-e", "python3", "-i", "/home/johngr/psdirc/TestBot2.py"], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+bot3 = Popen(["lxterminal", "-e", "python3", "-i", "/home/johngr/psdirc/TestBot3.py"], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+
 
 servidor rapido:
 
