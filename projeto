@@ -81,7 +81,7 @@ carro {
 			   se eh entretenimento:
 			   	  tempo atual - tempo x >= 0.03
 			   se eh conforto:
-                  tempo atual - tempo x >= 0.05
+            tempo atual - tempo x >= 0.05
 
 				essas coisas retornam true ou false
 
@@ -113,16 +113,16 @@ carro {
 					  	    velocidade <- 0
 						se eh de acelerar:
 						    velocidade + 5
-					    se eh de chamar ambulancia:
+					  se eh de chamar ambulancia:
 						    chamar ambulancia <- True
 					se eh de entretenimento:
 					   print("Jogo para quem esta dirigindo recebeu msg")
 					se eh de lazer/conforto:
 					   print("Pessoa que voce nao vai pegar postou foto")
 
-                se deu timeout:
-				   faca nada
-			    volta loop
+          se deu timeout:
+				     faca nada
+			  volta loop
 }
 
 
