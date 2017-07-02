@@ -34,12 +34,12 @@ int user_command (int socketfd, char *buffer, unsigned long buffer_size) {
 	}
 
 	/* envia mensagem ao servidor */
-    res = send(socketfd, buffer, buffer_size - 1, 0);
+  res = send(socketfd, buffer, buffer_size - 1, 0);
 	if (res == -1) {
 		printf("ERROR: Couldn't send message to server\n");
 		return -1;
 	}
-			
+
 	return COMMAND_MSG;
 }
 
@@ -58,14 +58,14 @@ int server_response (int socketfd, char *buffer, unsigned long buffer_size) {
 	}
 
 	printf("Received from server: %s\n", buffer);
-	
+
 	return COMMAND_MSG;
 }
 
 /* Funcao principal. Precisa de 2 e somente 2 argumentos, o nome do servidor
    e o numero do arquivo de configuracao de carro a ser lido */
 int main (int argc, char* argv[]) {
-	
+
 	struct hostent *host_address;
 	struct sockaddr_in socket_address, conf_address;
 	const char *host;
@@ -74,13 +74,13 @@ int main (int argc, char* argv[]) {
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
-	
+
 	/* verificação de argumentos */
 	if (argc == 10) {
 		host = argv[1];
 		carNumber = atoi(argv[2]);
 		printf("%d\n", carNumber);
-	} else {	
+	} else {
 		printf("ERROR: Two arguments should be provided. %d given.\n", argc-1);
 		return 0;
 	}
@@ -128,18 +128,18 @@ int main (int argc, char* argv[]) {
 	client_port = htons(conf_address.sin_port);
 	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
 		   client_port);
-	
+
 	/* ler e enviar linhas de texto, receber eco */
 	hasCommands = 1;
 	while (hasCommands) {
 		command = user_command(socketfd, buf, MAX_LINE);
-	
+
 		if (command == COMMAND_MSG) {
 			response = server_response(socketfd, buf, MAX_LINE);
 
 			if (response == -1) // caso de erro
 				hasCommands = 0;
-			
+
 		} else { // caso de erro ou comando de saida
 			hasCommands = 0;
 		}
@@ -147,8 +147,6 @@ int main (int argc, char* argv[]) {
 
 	/* fecha descritor */
 	close(socketfd);
-    
+
 	return 0;
 }
-
-	
