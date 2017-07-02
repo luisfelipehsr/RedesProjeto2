@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include "header.h"
+
 #define SERVER_PORT 12345
 #define MAX_LINE 256
 #define COMMAND_MSG 1
