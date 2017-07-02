@@ -2,7 +2,7 @@
 # Caso nao funcione na sua distribuicao, troque a chamada de terminal no loop
 from subprocess import Popen, PIPE
 import sys
-
+import re
 
 # Aceita alguns parametros para execucao do script.
 def main():
@@ -11,9 +11,17 @@ def main():
 
     numberCars = int(sys.argv[1])
 
+    fcars = open("carParameters", "r")
+    carList = fcars.readlines()
+    fcars.close()
+
     for i in range(numberCars):
-        Popen(["konsole", "--noclose", "-e",
-               "./testeWait"])
+        carParameters = re.findall(r"[-]?[\w]+", carList[i])
+        print(carParameters)
+        cmd = ["konsole", "--noclose", "-e", "./carClient", "localhost"]
+        for parameter in carParameters:
+            cmd += [parameter]
+        Popen(cmd)
 
 if __name__ == "__main__":
     main()

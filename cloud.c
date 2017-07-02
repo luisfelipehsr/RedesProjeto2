@@ -62,26 +62,23 @@ int server_response (int socketfd, char *buffer, unsigned long buffer_size) {
 	return COMMAND_MSG;
 }
 
-/* Funcao principal. Precisa de 2 e somente 2 argumentos, o nome do servidor
-   e o numero do arquivo de configuracao de carro a ser lido */
+/* Funcao principal. Precisa de 1 e somente 1 argumento, o nome do servidor */
 int main (int argc, char* argv[]) {
 	
 	struct hostent *host_address;
 	struct sockaddr_in socket_address, conf_address;
 	const char *host;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
-	int carNumber, hasCommands, command, response, socketfd, res;
+	int hasCommands, command, response, socketfd, res;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	
 	/* verificação de argumentos */
-	if (argc == 10) {
+	if (argc == 2)
 		host = argv[1];
-		carNumber = atoi(argv[2]);
-		printf("%d\n", carNumber);
-	} else {	
-		printf("ERROR: Two arguments should be provided. %d given.\n", argc-1);
+	else {	
+		printf("ERROR: One argument should be provided. %d given.\n", argc-1);
 		return 0;
 	}
 
