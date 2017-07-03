@@ -24,7 +24,7 @@ int answer(int sockfd, message msg){
 	confort conf;
 	int n;
 
-	srand(get_time());
+	srand((int) get_time());
 	n=rand()%5;
 
 	if (msg.TYPE == CONFORT) {

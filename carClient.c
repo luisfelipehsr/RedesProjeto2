@@ -77,6 +77,7 @@ int main (int argc, char* argv[]) {
 	struct timeval tv;
 	const char *host;
 	car myself;
+	message msg;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int carNumber, hasCommands, command, response, socketfd, res, waiting;
 	unsigned addrlen;
@@ -92,7 +93,7 @@ int main (int argc, char* argv[]) {
 		carNumber = atoi(argv[2]);
 		buildCar(&myself, argv, &app, &url, &reckless);
 		printf("Car %d created\n", carNumber);
-		
+
 	} else {
 		printf("ERROR: Ten arguments should be provided. %d given.\n", argc-1);
 		return 0;
@@ -147,13 +148,13 @@ int main (int argc, char* argv[]) {
 	//tv.tv_usec = 200; // == 0.2 ms
 	//setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
 	//		   sizeof(struct timeval));
-	
+
 	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
        valos de tempo para as acoes */
 	time = get_time();
 	buildTimeRegister(&tr, time);
-	
-	
+
+
 	/* Loop que faz cagadas no transito */
 	/*
 ta na hora(tipo intervalo, tempo x, tempo atual):
@@ -208,14 +209,28 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 
 	 */
 	waiting = 0; // nao esta esperando
-	srand((int) get_time());
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
-	   
-	
+
+
 		if (isTime(UPDATE, time, &tr)) {
-			if (!waiting || reckless)
+			if (!waiting || reckless){
+				srand((int) time);
 				myself.vel += (rand() % 10) + 10;
+			}
+
+			if (myself.dir == 0)
+				myself.x += (myself.vel)*(myself.sent);
+
+			else if(myself.dir == 1)
+				myself.y += (myself.vel)*(myself.sent);
+
+			msg.TYPE = SECURITY;
+			msg.MODIFIER = CAR_REPORT;
+			memcpy(&msg.data, &myself, sizeof(car));
+			memcpy(&buf, &msg, sizeof(message));
+
+			send(socketfd, &buf, MAX_LINE, 0);
 
 			printf("ta funfando\n");
 		}

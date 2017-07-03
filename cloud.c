@@ -23,7 +23,7 @@ int answer(int sockfd, message msg){
 	n=rand()%5;
 
 	if (msg.TYPE == CONFORT) {
-		memcpy(&msg.data, &conf, sizeof(confort));
+		memcpy(&conf, &msg.data, sizeof(confort));
 		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -37,7 +37,6 @@ int answer(int sockfd, message msg){
 							conf.text);
 			}
 
-			memcpy(&out, buf, sizeof(message));
 		} else if (strcmp(conf.url, URL_TWITTER) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -51,11 +50,10 @@ int answer(int sockfd, message msg){
 							conf.text);
 			}
 
-			memcpy(&out, buf, sizeof(message));
 		}
 
 	} else if (msg.TYPE == ENTERTAINMENT) {
-		memcpy(&msg.data, &ent, sizeof(entertain));
+		memcpy(&ent, &msg.data, sizeof(entertain));
 		if (strcmp(ent.appName, APP_TIBIA) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -69,7 +67,6 @@ int answer(int sockfd, message msg){
 							ent.data);
 			}
 
-			memcpy(&out, buf, sizeof(message));
 		} else if (strcmp(ent.appName, APP_POKEMON) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -83,11 +80,10 @@ int answer(int sockfd, message msg){
 							ent.data, &n);
 			}
 
-			memcpy(&out, buf, sizeof(message));
 		}
 	}
 
-
+	memcpy(buf, &out, sizeof(message));
 	return send(s, &buf, MAX_LINE, 0);
 }
 
