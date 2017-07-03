@@ -14,6 +14,7 @@
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 1000
 #define INTERVAL_UPDATE 1000
+#define STOP_SIMULATION 5
 #define STOP_TIME 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
@@ -102,7 +103,7 @@ int isTime (int mode, long currentTime, time_register *tr) {
 			   currentTime - tr->last_update > INTERVAL_UPDATE) {
 		tr->last_update = currentTime;
 		return 1;
-	} else if (mode == STOP_TIME &&
+	} else if (mode == STOP_SIMULATION &&
 			   currentTime - tr->start_time > STOP_TIME) {
 		return 1;
 	}
@@ -174,7 +175,7 @@ int main() {
 
 	
 	// imprime atividades realizadas a cada certo intervalo
-	while(!isTime(STOP_TIME, time, &tr)) {
+	while(!isTime(STOP_SIMULATION, time, &tr)) {
 		
 		time = get_time();
 		if (!time) {

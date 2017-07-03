@@ -16,15 +16,14 @@
 #define ENTERTAINMENT 2
 #define CONFORT 3
 #define UPDATE 4
-#define STOP 5
+#define STOP_SIMULATION 5
 #define INTERVAL_SECURITY 50
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 2000
 #define INTERVAL_UPDATE 1000
-#define SIMULATION_DURATION 20000
+#define STOP_TIME 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
-#define STOP_TIME 2
 #define CALL_RESCUE 3
 #define URL_FACEBOOK "www.facebook.com"
 #define URL_TWITTER "www.twitter.com"
@@ -53,7 +52,7 @@ typedef struct car {
 /* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {
 	char TYPE;
-	char MODE;
+	char MODIFIER;
 	char data[254];
 } message;
 
@@ -96,8 +95,8 @@ int isTime (int mode, long currentTime, time_register *tr) {
 			   currentTime - tr->last_update > INTERVAL_UPDATE) {
 		tr->last_update = currentTime;
 		return 1;
-	} else if (mode == STOP_TIME &&
-			   currentTime - tr->start_time > SIMULATION_DURATION) {
+	} else if (mode == STOP_SIMULATION &&
+			   currentTime - tr->start_time > STOP_TIME) {
 		return 1;
 	}
 	
