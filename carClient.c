@@ -83,7 +83,7 @@ int main (int argc, char* argv[]) {
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time;
+	time_t time, START_MOVING;
 	int app, url, reckless;
 
 	/* verificação de argumentos */
@@ -153,7 +153,7 @@ int main (int argc, char* argv[]) {
 	time = get_time();
 	buildTimeRegister(&tr, time);
 	
-
+	
 	/* Loop que faz cagadas no transito */
 	/*
 ta na hora(tipo intervalo, tempo x, tempo atual):
@@ -208,31 +208,17 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 
 	 */
 	waiting = 0; // nao esta esperando
+	srand((int) get_time());
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
-		//if (time - tr.start_time == 1000)
-		//	printf("%ld\n", time);
-		//if (time % 1000 == 0)
-		//	printf("sdadasda");
+	   
+	
+		if (isTime(UPDATE, time, &tr)) {
+			if (!waiting || reckless)
+				myself.vel += (rand() % 10) + 10;
 
-		
-		if (isTime(UPDATE, time, &tr))
 			printf("ta funfando\n");
-		
-		
-		/*
-		command = user_command(socketfd, buf, MAX_LINE);
-
-		if (command == COMMAND_MSG) {
-			response = server_response(socketfd, buf, MAX_LINE);
-
-			if (response == -1) // caso de erro
-				hasCommands = 0;
-
-		} else { // caso de erro ou comando de saida
-			hasCommands = 0;
 		}
-		*/
 	}
 
 	/* fecha descritor */
