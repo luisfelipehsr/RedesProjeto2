@@ -99,9 +99,7 @@ int main(int argc, char * argv[]){
     //timeout retorna SOCKET_ERROR
     if ((bytesreceived != SOCKET_ERROR) && (n_msgs < MAX_MSG_CAR*n_cars)){
       msgbuf[n_msgs].timestamp = get_time();
-      msgbuf[n_msgs].msg.TYPE = buf[0];
-      msgbuf[n_msgs].msg.MODE = buf[1];
-      msgbuf[n_msgs].msg.data = buf;
+      memcpy(buf, &msgbuf[n_msgs].msg, sizeof(message));
       n_msgs++;
     }
 

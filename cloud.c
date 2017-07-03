@@ -12,6 +12,90 @@
 #define COMMAND_MSG 1
 #define COMMAND_EXIT 0
 
+int answer(int sockfd, message msg){
+	char buf[MAX_LINE];
+	message out;
+	entertain ent;
+	confort conf;
+	int n;
+
+	srand(get_time());
+	n=rand()%5;
+
+	if (msg.TYPE == CONFORT) {
+		memcpy(&msg.data, &conf, sizeof(confort));
+		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce NAO quer pegar curtiu seu status: %s",
+							conf.text);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce QUER pegar curtiu seu status: %s",
+							conf.text);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		} else if (strcmp(conf.url, URL_TWITTER) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce NAO quer pegar retweetou: %s",
+							conf.text);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce QUER pegar retweetou: %s",
+							conf.text);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		}
+
+	} else if (msg.TYPE == ENTERTAINMENT) {
+		memcpy(&msg.data, &ent, sizeof(entertain));
+		if (strcmp(ent.appName, APP_TIBIA) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Outro jogador te matou e roubou suas coisas quando voce tentou %s\n",
+							ent.data);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce conseguiu realizar \"%s\" com sucesso! Congratz! GG!\n",
+							ent.data);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		} else if (strcmp(ent.appName, APP_POKEMON) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce nao conseguiu %s...\n",
+							ent.data);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
+							ent.data, &n);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		}
+	}
+
+
+	return send(s, &buf, MAX_LINE, 0);
+}
+
+
+
+
+
+
 /* Recebe um comando do usuario e envia para o servidor.
  * Retorna: -1 se houve um erro, 0 se foi um comando de exit ou
  *          1 se foi uma mensagem. */
@@ -39,7 +123,7 @@ int user_command (int socketfd, char *buffer, unsigned long buffer_size) {
 		printf("ERROR: Couldn't send message to server\n");
 		return -1;
 	}
-			
+
 	return COMMAND_MSG;
 }
 
@@ -58,13 +142,13 @@ int server_response (int socketfd, char *buffer, unsigned long buffer_size) {
 	}
 
 	printf("Received from server: %s\n", buffer);
-	
+
 	return COMMAND_MSG;
 }
 
 /* Funcao principal. Precisa de 1 e somente 1 argumento, o nome do servidor */
 int main (int argc, char* argv[]) {
-	
+
 	struct hostent *host_address;
 	struct sockaddr_in socket_address, conf_address;
 	const char *host;
@@ -73,14 +157,14 @@ int main (int argc, char* argv[]) {
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
-	
+
 	/* verificação de argumentos */
 	if (argc == 2)
 		host = argv[1];
-	else {	
+	else {
 		printf("ERROR: One argument should be provided. %d given.\n", argc-1);
 		return 0;
-	}
+	}https://www.techonthenet.com/c_language/constants/create_define.php
 
 	/* tradução de nome para endereço IP */
 	host_address = NULL;
@@ -125,18 +209,18 @@ int main (int argc, char* argv[]) {
 	client_port = htons(conf_address.sin_port);
 	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
 		   client_port);
-	
+
 	/* ler e enviar linhas de texto, receber eco */
 	hasCommands = 1;
 	while (hasCommands) {
 		command = user_command(socketfd, buf, MAX_LINE);
-	
+
 		if (command == COMMAND_MSG) {
 			response = server_response(socketfd, buf, MAX_LINE);
 
 			if (response == -1) // caso de erro
 				hasCommands = 0;
-			
+
 		} else { // caso de erro ou comando de saida
 			hasCommands = 0;
 		}
@@ -144,8 +228,6 @@ int main (int argc, char* argv[]) {
 
 	/* fecha descritor */
 	close(socketfd);
-    
+
 	return 0;
 }
-
-	
