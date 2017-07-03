@@ -28,6 +28,7 @@
 #define BREAK
 #define CALL_RESCUE 3
 #define VEL_WAIT_LIMIT 45
+#define MAX_LINE 256
 #define URL_FACEBOOK "www.facebook.com"
 #define URL_TWITTER "www.twitter.com"
 #define APP_TIBIA "tibia"
@@ -77,7 +78,7 @@ typedef struct message {
 	time_t SENDTIME;
 	char TYPE;
 	char MODIFIER;
-	char data[246];
+	char data[MAX_LINE - 10];
 } message;
 
 typedef struct message_buffer {
