@@ -28,7 +28,7 @@ int receive_command(int clientfd, char *buffer, size_t buffer_size) {
 		printf("ERROR: Couldn't receive from buffer\n");
 		return -1;
 	}
-	printf("Received: %s", buffer);
+	//printf("Received: %s", buffer);
 
 	/* Imprime IP do cliente que enviou a mensagem */
 	addrlen = sizeof(client_address);
@@ -39,12 +39,12 @@ int receive_command(int clientfd, char *buffer, size_t buffer_size) {
 		return 0;
 	}
 	inet_ntop(AF_INET, &(client_address.sin_addr), client_ip, INET_ADDRSTRLEN);
-	printf("Mensagem enviada por: %s:%u\n---------\n", client_ip, client_port);
+	printf("---------\nMensagem enviada por: %s:%u\n", client_ip, client_port);
 	
 	/* verifica se eh um comando de saida */
-	res = strcmp(buffer, "exit\n");
-	if (res == COMMAND_EXIT)
-		return COMMAND_EXIT;
+	//res = strcmp(buffer, "exit\n");
+	//if (res == COMMAND_EXIT)
+	//	return COMMAND_EXIT;
 
 	return COMMAND_MSG;
 }
@@ -173,19 +173,9 @@ int main() {
 					 * Se for um exit, termina a aplicacao */
 					res = receive_command(clientfd, buf, MAX_LINE);
 		
-					if (res == COMMAND_EXIT) { // Testa erros ou exit
-						close(clientfd);
-						FD_CLR(clientfd, &all_fds);
-						clients[i] = -1;
-				
-					} else if (res == COMMAND_MSG) {
-						res = send(clientfd, buf, MAX_LINE-1, 0);
-		
-				
-					} else {
-						printf("ERROR: Couldn't send message\n");
-				
-					}
+				    if(send(clientfd, buf, MAX_LINE-1, 0) == -1)
+						printf("ERROR: Couldn't send message to client %d\n",
+							   i);
 				}
 			}
 		}
