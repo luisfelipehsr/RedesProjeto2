@@ -100,13 +100,16 @@ int answer(int sockfd, message msg){
 int main(int argc, char * argv[]){
 
   struct hostent *host_address;
-  struct sockaddr_in socket_address;
+  struct sockaddr_in socket_address, conf_address;
   char *host;
-  char buf[MAX_LINE], eco[MAX_LINE + 10];
+  char buf[MAX_LINE], eco[MAX_LINE + 10], client_ip[INET_ADDRSTRLEN];
   car *cars;
   message_buffer *msgbuf;
-  int s, i;
-  int len, n_cars, n_msgs;
+  unsigned addrlen;
+  unsigned short client_port;
+  int s, i, res;
+  int n_cars, n_msgs;
+  size_t len;
   int bytessent, bytesreceived;
   struct timeval tv;
   long t;
@@ -137,7 +140,10 @@ int main(int argc, char * argv[]){
   socket_address.sin_family = AF_INET;
   bcopy(host_address->h_addr, (char *)&socket_address.sin_addr, host_address->h_length);
   socket_address.sin_port = htons(SERVER_PORT);
-  len = sizeof(socket_address);
+  //len = sizeof(socket_address);
+  len = host_address->h_length;
+  bcopy((char *)host_address->h_addr_list[0],
+		(char *)&socket_address.sin_addr.s_addr, len);
 
   /* criação de socket ativo*/
   s = socket(AF_INET, SOCK_STREAM, 0);
@@ -146,19 +152,35 @@ int main(int argc, char * argv[]){
     return -1;
   }
 
-  printf("Socket Criado\n");
+  //printf("Socket Criado\n");
 
   /* estabelecimento da conexão */
-  if (connect(s, (struct sockaddr*)&socket_address, len) == -1) {
+  if (connect(s, (const struct sockaddr*)&socket_address,
+			  sizeof(socket_address)) == -1) {
     fprintf(stderr, "Falha no estabelecimento da conexao.\n");
     return -1;
   }
-
+  /*
   printf("Conectado\n");
 
-  getsockname(s, (struct sockaddr*)&socket_address, &len);
-  printf("\nInformacoes do socket local:\nIP: %s\nPorta: %d\n\n", inet_ntoa((struct in_addr)socket_address.sin_addr),socket_address.sin_port);
+  addrlen = sizeof(conf_address);
+  getsockname(s, (struct sockaddr*) &conf_address, &addrlen);
+  printf("\nInformacoes do socket local:\nIP: %s\nPorta: %u\n\n", inet_ntoa((struct in_addr) conf_address.sin_addr),conf_address.sin_port);
+  */
 
+/* Imprime informacoes das portas e IPs do cliente */
+	addrlen = sizeof(conf_address);
+	res = getsockname(s, (struct sockaddr *) &conf_address, &addrlen);
+	if (res == -1) {
+		printf("erro ao obter endereço do cliente\n");
+		return 0;
+	}
+	inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip, INET_ADDRSTRLEN);
+	client_port = htons(conf_address.sin_port);
+	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
+		   client_port);
+
+  
   tv.tv_sec = 0;
   tv.tv_usec = 2000; // == 2 ms
   //timeout de 2ms para o recv

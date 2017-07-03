@@ -88,14 +88,14 @@ int main (int argc, char* argv[]) {
 	int app, url, reckless;
 
 	/* verificação de argumentos */
-	if (argc == 12) {
+	if (argc == 13) {
 		host = argv[1];
 		carNumber = atoi(argv[2]);
 		buildCar(&myself, argv, &app, &url, &reckless);
 		printf("Car %d created\n", carNumber);
 
 	} else {
-		printf("ERROR: Ten arguments should be provided. %d given.\n", argc-1);
+		printf("ERROR: Twelve arguments should be provided. %d given.\n", argc-1);
 		return 0;
 	}
 
