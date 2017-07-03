@@ -17,6 +17,86 @@ void remove_msg(message_buffer *msgbuf, int i, int n_msgs) {
   }
 }
 
+int answer(int sockfd, message msg){
+	char buf[MAX_LINE];
+	message out;
+	entertain ent;
+	confort conf;
+	int n;
+
+	srand(get_time());
+	n=rand()%5;
+
+	if (msg.TYPE == CONFORT) {
+		memcpy(&msg.data, &conf, sizeof(confort));
+		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce NAO quer pegar curtiu seu status: %s",
+							conf.text);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce QUER pegar curtiu seu status: %s",
+							conf.text);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		} else if (strcmp(conf.url, URL_TWITTER) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce NAO quer pegar retweetou: %s",
+							conf.text);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "A pessoa que voce QUER pegar retweetou: %s",
+							conf.text);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		}
+
+	} else if (msg.TYPE == ENTERTAINMENT) {
+		memcpy(&msg.data, &ent, sizeof(entertain));
+		if (strcmp(ent.appName, APP_TIBIA) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Outro jogador te matou e roubou suas coisas quando voce tentou %s\n",
+							ent.data);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce conseguiu realizar \"%s\" com sucesso! Congratz! GG!\n",
+							ent.data);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		} else if (strcmp(ent.appName, APP_POKEMON) == 0) {
+			if (n < 3) {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce nao conseguiu %s...\n",
+							ent.data);
+			} else {
+				out.TYPE = msg.TYPE;
+				out.MODIFIER = msg.MODIFIER;
+				sprintf(out.data, "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
+							ent.data, &n);
+			}
+
+			memcpy(&out, buf, sizeof(message));
+		}
+	}
+
+
+	return send(s, &buf, MAX_LINE, 0);
+}
+
+
 int main(int argc, char * argv[]){
 
   struct hostent *host_address;
