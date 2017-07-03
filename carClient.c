@@ -55,6 +55,19 @@ int server_response (int socketfd, char *buffer, unsigned long buffer_size) {
 	return COMMAND_MSG;
 }
 
+void buildCar(car *myself, char *argv[], int *app, int *url, int *reckless) {
+	myself->id = atoi(argv[2]);
+	myself->x = atoi(argv[3]);
+	myself->y = atoi(argv[4]);
+	myself->vel = atoi(argv[5]);
+	myself->dir = atoi(argv[6]);
+	myself->sent = atoi(argv[7]);
+	myself->tam = atoi(argv[8]);
+	*app = atoi(argv[9]);
+	*url = atoi(argv[10]);
+	*reckless = atoi(argv[11]);
+}
+
 /* Funcao principal. Precisa de 2 e somente 2 argumentos, o nome do servidor
    e o numero do arquivo de configuracao de carro a ser lido */
 int main (int argc, char* argv[]) {
@@ -63,19 +76,23 @@ int main (int argc, char* argv[]) {
 	struct sockaddr_in socket_address, conf_address;
 	struct timeval tv;
 	const char *host;
+	car myself;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
-	int carNumber, hasCommands, command, response, socketfd, res;
+	int carNumber, hasCommands, command, response, socketfd, res, waiting;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
 	time_t time;
+	int app, url, reckless;
 
 	/* verificação de argumentos */
-	if (argc == 11) {
+	if (argc == 12) {
 		host = argv[1];
 		carNumber = atoi(argv[2]);
-		printf("%d\n", carNumber);
+		buildCar(&myself, argv, &app, &url, &reckless);
+		printf("Car %d created\n", carNumber);
+		
 	} else {
 		printf("ERROR: Ten arguments should be provided. %d given.\n", argc-1);
 		return 0;
@@ -126,8 +143,8 @@ int main (int argc, char* argv[]) {
 		   client_port);
 
 	/* Estabelece um tempo de timeout de 0.2ms para qualquer receive */
-	tv.tv_sec = 0;
-	tv.tv_usec = 200; // == 0.2 ms
+	//tv.tv_sec = 0;
+	//tv.tv_usec = 200; // == 0.2 ms
 	//setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
 	//		   sizeof(struct timeval));
 	
@@ -136,7 +153,7 @@ int main (int argc, char* argv[]) {
 	time = get_time();
 	buildTimeRegister(&tr, time);
 	
-	
+
 	/* Loop que faz cagadas no transito */
 	/*
 ta na hora(tipo intervalo, tempo x, tempo atual):
@@ -190,11 +207,17 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			  volta loop
 
 	 */
-	while (!isTime(STOP_TIME, time, &tr)) {
+	waiting = 0; // nao esta esperando
+	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
+		//if (time - tr.start_time == 1000)
+		//	printf("%ld\n", time);
+		//if (time % 1000 == 0)
+		//	printf("sdadasda");
 
+		
 		if (isTime(UPDATE, time, &tr))
-			printf("ta funfando");
+			printf("ta funfando\n");
 		
 		
 		/*
