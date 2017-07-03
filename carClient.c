@@ -7,16 +7,16 @@
 
 void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
 	printf("\n\n------------------------\nUPDATE #%d:\n", numUpdate);
-	printf("Total messages sent:\n");
+	printf("Total messages sent / received:\n");
 	printf("SECURITY CONFORT ENTERTAINMENT\n");
 	printf("%8d %7d %13d\n", mc.sent_security, mc.sent_confort,
 		   mc.sent_entertainment);
 
-	printf("Total messages received:\n");
+	//printf("Total messages received:\n");
 	printf("CONFORT ENTERTAINMENT ACCELERATE BREAK CALL_HELP\n");
-	printf("Maximum delay: %ld\n", delay);
 	printf("%7d %13d %10d %5d %9d\n", mc.rcvd_confort, mc.rcvd_entertainment,
 		   mc.rcvd_accelerate, mc.rcvd_break, mc.rcvd_call_help);
+	printf("Maximum delay: %ld\n", delay);
 	printf("\nCar status:\n");
 	printf("x: %4d y: %4d vel: %3d dir: %2d\n",
 		   myself.x, myself.y, myself.vel, myself.dir);
@@ -45,7 +45,24 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		memcpy(buf, &msg, sizeof(msg));
 
 		//printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
-	
+	} else if (mode == ENTERTAINMENT) {
+		msg.TYPE = ENTERTAINMENT;
+		msg.MODIFIER = 0;
+		if (url == 0) {
+			strcpy(ent.appName, APP_TIBIA);
+			strcpy(ent.data, "Atacou um orc");
+		}
+		if (url == 1) {
+			strcpy(ent.appName, APP_POKEMON);
+			strcpy(ent.data, "A wild code appears");
+		}
+
+		//printf("%s\n", conf.text);
+		
+		/* adiciona mensagem ao buffer */
+		memcpy(&msg.data, &ent, sizeof(ent));
+		memcpy(buf, &msg, sizeof(msg));
+		
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
 		msg.MODIFIER = 0;
@@ -347,6 +364,17 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 				mc.sent_confort += 1;
 			}
 	    }
+
+		if (isTime(ENTERTAINMENT, time, &tr)) {
+			if (send_message(ENTERTAINMENT, socketfd, myself, app, url,
+							 time) == -1) {
+				printf("ERROR: Couldn't send security message to server\n");
+				return 0;
+			} else {
+				mc.sent_entertainment += 1;
+			}
+	    }
+
 			
 	}
 
