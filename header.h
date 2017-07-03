@@ -25,12 +25,27 @@
 #define STOP_TIME 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
+#define BREAK
 #define CALL_RESCUE 3
 #define VEL_WAIT_LIMIT 45
 #define URL_FACEBOOK "www.facebook.com"
 #define URL_TWITTER "www.twitter.com"
 #define APP_TIBIA "tibia"
 #define APP_POKEMON "pokemon"
+
+/* estrutura para guardar contadores de numero de mensagens */
+typedef struct msg_counter {
+	int sent_security;
+	int sent_confort;
+	int sent_entertainment;
+	int sent_accelerate;
+	int sent_break;
+	int rcvd_security;
+	int rcvd_confort;
+	int rcvd_entertainment;
+	int rcvd_accelerate;
+	int rcvd_break;
+} msg_counter;
 
 /*estrutura para armazenar carros*/
 typedef struct car {
@@ -41,8 +56,8 @@ typedef struct car {
 
 /* Estrutura padrao de mensagem de conforto/lazer */
 typedef struct confort {
-	char url[64];
-  char text[100];
+    char url[64];
+	char text[100];
 } confort;
 
 /* Estrutura padrao de mensagem de entretenimento */
@@ -58,9 +73,10 @@ typedef struct security {
 
 /* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {
+	time_t SENDTIME;
 	char TYPE;
 	char MODIFIER;
-	char data[254];
+	char data[246];
 } message;
 
 typedef struct message_buffer {
@@ -85,6 +101,19 @@ void buildTimeRegister(time_register *tr, long currentTime) {
 	tr->last_security = currentTime;
 	tr->last_update = currentTime;
 	tr->start_time = currentTime;
+}
+
+void buildMsgCounter(msg_counter *mc) {
+	mc->sent_security = 0;
+	mc->sent_confort = 0;
+	mc->sent_entertainment = 0;
+	mc->sent_accelerate = 0;
+	mc->sent_break = 0;
+	mc->rcvd_security = 0;
+	mc->rcvd_confort = 0;
+	mc->rcvd_entertainment = 0;
+	mc->rcvd_accelerate = 0;
+	mc->rcvd_break = 0;
 }
 
 

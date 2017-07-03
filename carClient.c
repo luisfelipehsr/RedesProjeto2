@@ -5,43 +5,63 @@
 #define COMMAND_MSG 1
 #define COMMAND_EXIT 0
 
+void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
+	printf("\n\n------------------------\nUPDATE #%d:\n", numUpdate);
+	printf("Total messages sent:\n");
+	printf("SECURITY CONFORT ENTERTAINMENT\n");
+	printf("%8d %7d %13d\n", mc.sent_security, mc.sent_confort,
+		   mc.sent_entertainment);
+
+	printf("Total messages received:\n");
+	printf("CONFORT ENTERTAINMENT ACCELERATE BREAK CALL_HELP\n");
+	printf("Maximum delay: %ld\n", delay);
+	printf("%7d %13d %10d %5d %9d\n");
+	printf("\nCar status:\n");
+	printf("x: %4d y: %4d vel: %3d dir: %2d\n",
+		   myself.x, myself.y, myself.vel, myself.dir);
+}
+
+	
+
 int send_message(int mode, int socketfd, car myself, int app, int url,
-				 time_t time, time_register *tr) {
+				 time_t time) {
 	message msg;
 	security secr;
 	confort conf;
 	entertain ent;
 	char buf[MAX_LINE];
-	int res;
+	long i;
 
+	msg.SENDTIME = time;
+	
 	if (mode == SECURITY) {
-		
 		msg.TYPE = SECURITY;
 		msg.MODIFIER = CAR_REPORT;
 		secr.carInfo = myself;
+
+		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &secr, sizeof(secr));
 		memcpy(buf, &msg, sizeof(msg));
-		tr->last_security = time;
 
 		printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
 	
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
+		msg.MODIFIER = 0;
 		if (url == 0) {
 			strcpy(conf.url, URL_FACEBOOK);
 			strcpy(conf.text, "Olha essa foto minha dirigindo");
 		}
-
 		if (url == 1) {
 			strcpy(conf.url, URL_TWITTER);
 			strcpy(conf.text, "dirijo bem #tweetdirigindo");
 		}
 
+		printf("%s\n", conf.text);
+		
+		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
 		memcpy(buf, &msg, sizeof(msg));
-
-		printf("%s\n", buf+66);
-
 	}
 
 	return send(socketfd, &buf, MAX_LINE, 0);
@@ -119,16 +139,17 @@ int main (int argc, char* argv[]) {
 	struct sockaddr_in socket_address, conf_address;
 	struct timeval tv;
 	const char *host;
+	msg_counter mc;
 	car myself;
 	message msg;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int carNumber, hasCommands, command, response, socketfd, res, waiting;
-	int callingHelp;
+	int callingHelp, numUpdate;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time, START_MOVING;
+	time_t time, rcv_time, START_MOVING;
 	int app, url, reckless;
 
 	/* verificação de argumentos */
@@ -258,8 +279,12 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 	//=====================================================================
 	//LUIS, NAO QUER CRIAR UMA THREAD QUE FICA ESPERANDO AS RESPOSTAS? AI, NAO POE TIMEOUT
 	//=====================================================================
+	rcv_time = 0;
+	numUpdate = 0;
+	buildMsgCounter(&mc);
 	waiting = 0; // nao esta esperando
 	callingHelp = 0; // nao esta chamando ajuda
+	rcv_time = 0; // DEVE SER SETADO QUANDO TIVER RECEBIDO MSG!!!!!!!!!
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
 
@@ -288,14 +313,31 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 
 			send(socketfd, &buf, MAX_LINE, 0);
 			*/
-			if (send_message(SECURITY, socketfd, myself, app, url, time,
-							 &tr) == -1) {
+			
+		    printUpdate(numUpdate, myself, time, 
+			numUpdate += 1;
+		}
+
+		if (isTime(SECURITY, time, &tr)) {
+			if (send_message(SECURITY, socketfd, myself, app, url,
+							 time) == -1) {
 				printf("ERROR: Couldn't send security message to server\n");
 				return 0;
+			} else {
+				mc.sent_security += 1;
 			}
+	    }
+
+		if (isTime(CONFORT, time, &tr)) {
+			if (send_message(CONFORT, socketfd, myself, app, url,
+							 time) == -1) {
+				printf("ERROR: Couldn't send security message to server\n");
+				return 0;
+			} else {
+				mc.sent_confort += 1;
+			}
+	    }
 			
-			printf("ta funfando\n");
-		}
 	}
 
 	/* fecha descritor */
