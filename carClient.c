@@ -1,12 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
 #include "header.h"
 
 #define SERVER_PORT 12345
@@ -70,15 +61,18 @@ int main (int argc, char* argv[]) {
 
 	struct hostent *host_address;
 	struct sockaddr_in socket_address, conf_address;
+	struct timeval tv;
 	const char *host;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int carNumber, hasCommands, command, response, socketfd, res;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
+	time_register tr;
+	time_t time;
 
 	/* verificação de argumentos */
-	if (argc == 10) {
+	if (argc == 11) {
 		host = argv[1];
 		carNumber = atoi(argv[2]);
 		printf("%d\n", carNumber);
@@ -131,9 +125,79 @@ int main (int argc, char* argv[]) {
 	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
 		   client_port);
 
-	/* ler e enviar linhas de texto, receber eco */
-	hasCommands = 1;
-	while (hasCommands) {
+	/* Estabelece um tempo de timeout de 0.2ms para qualquer receive */
+	tv.tv_sec = 0;
+	tv.tv_usec = 200; // == 0.2 ms
+	//setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
+	//		   sizeof(struct timeval));
+	
+	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
+       valos de tempo para as acoes */
+	time = get_time();
+	buildTimeRegister(&tr, time);
+	
+	
+	/* Loop que faz cagadas no transito */
+	/*
+ta na hora(tipo intervalo, tempo x, tempo atual):
+ 			   tempo atual - tempo x
+			   se eh atualizacao ou seguranca:
+			   	  tempo atual- tempo x >= 1
+			   se eh entretenimento:
+			   	  tempo atual - tempo x >= 0.03
+			   se eh conforto:
+            tempo atual - tempo x >= 0.05
+
+				essas coisas retornam true ou false
+
+
+
+			enquanto() :
+				checar a hora
+
+				se nao esta esperando E nao eh reckless E ta na hora:
+				   atualiza velocidade (pode receber um incremento rand)
+				   atualiza posicao
+				   atualiza tempo da ultima atualizacao
+				se eh pra chamar a ambulancia:
+				   print("VOU BOTAR NO YOUTUBE")
+
+				se ta na hora de seguranca:
+				   envia mensagem de seguranca
+
+				se ta na hora de entretenimento:
+				   gera mensagem aleatoria de entretenimento
+				   manda mensagem
+				se conforto:
+				   mesmo de cima
+
+				recebe uma mensagem (timeout de 0.01, vulgo 10ms good ping)
+				se recebeu mensagem:
+				    se eh de seguranca:
+				        se eh de frear:
+					  	    velocidade <- 0
+						se eh de acelerar:
+						    velocidade + 5
+					  se eh de chamar ambulancia:
+						    chamar ambulancia <- True
+					se eh de entretenimento:
+					   print("Jogo para quem esta dirigindo recebeu msg")
+					se eh de lazer/conforto:
+					   print("Pessoa que voce nao vai pegar postou foto")
+
+          se deu timeout:
+				     faca nada
+			  volta loop
+
+	 */
+	while (!isTime(STOP_TIME, time, &tr)) {
+		time = get_time();
+
+		if (isTime(UPDATE, time, &tr))
+			printf("ta funfando");
+		
+		
+		/*
 		command = user_command(socketfd, buf, MAX_LINE);
 
 		if (command == COMMAND_MSG) {
@@ -145,6 +209,7 @@ int main (int argc, char* argv[]) {
 		} else { // caso de erro ou comando de saida
 			hasCommands = 0;
 		}
+		*/
 	}
 
 	/* fecha descritor */

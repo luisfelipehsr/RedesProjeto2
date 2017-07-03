@@ -6,9 +6,9 @@ import re
 
 # Aceita alguns parametros para execucao do script.
 def main():
-    if len(sys.argv) < 2:
-        sys.exit("ERROR: At least 1 parameter is needed")
-
+    if len(sys.argv) < 3:
+        sys.exit("ERROR: At least 2 parameters are needed. First is "
+                 + "number of cars, second is server name")
     numberCars = int(sys.argv[1])
 
     fcars = open("carParameters", "r")
@@ -18,7 +18,7 @@ def main():
     for i in range(numberCars):
         carParameters = re.findall(r"[-]?[\w]+", carList[i])
         print(carParameters)
-        cmd = ["konsole", "--noclose", "-e", "./carClient", "localhost", str(i)]
+        cmd = ["konsole", "--noclose", "-e", "./carClient", sys.argv[2], str(i)]
         for parameter in carParameters:
             cmd += [parameter]
         Popen(cmd)

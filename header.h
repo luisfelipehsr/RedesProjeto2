@@ -9,20 +9,27 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #define CLOUD 0
 #define SECURITY 1
 #define ENTERTAINMENT 2
 #define CONFORT 3
 #define UPDATE 4
+#define STOP 5
 #define INTERVAL_SECURITY 50
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 2000
 #define INTERVAL_UPDATE 1000
+#define SIMULATION_DURATION 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
-#define STOP 2
+#define STOP_TIME 2
 #define CALL_RESCUE 3
+#define URL_FACEBOOK "www.facebook.com"
+#define URL_TWITTER "www.twitter.com"
+#define APP_TIBIA "tibia"
+#define APP_POKEMON "pokemon"
 
 /* Estrutura padrao de mensagem de conforto/lazer */
 typedef struct confort {
@@ -62,10 +69,17 @@ typedef struct time_register {
 	time_t last_confort;
 	time_t last_security;
 	time_t last_update;
-	int numEntertainment;
-	int numConfort;
-	int numSecurity;
+	time_t start_time;
 } time_register;
+
+/* Constroi um registrador de horarios */
+void buildTimeRegister(time_register *tr, long currentTime) {
+	tr->last_entertainment = currentTime;
+	tr->last_confort = currentTime;
+	tr->last_security = currentTime;
+	tr->last_update = currentTime;
+	tr->start_time = currentTime;
+}
 
 
 /* Determina se esta no horario de algo de acordo com um intervalo */
@@ -81,6 +95,9 @@ int isTime (int mode, long currentTime, time_register *tr) {
 	} else if (mode == UPDATE &&
 			   currentTime - tr->last_update > INTERVAL_UPDATE) {
 		tr->last_update = currentTime;
+		return 1;
+	} else if (mode == STOP_TIME &&
+			   currentTime - tr->start_time > SIMULATION_DURATION) {
 		return 1;
 	}
 	
@@ -101,15 +118,3 @@ long get_time () {
 
 	return time_ms;
 }
-
-/* Constroi um registrador de horarios */
-void buildTimeRegister(time_register *tr, long currentTime) {
-	tr->last_entertainment = currentTime;
-	tr->last_confort = currentTime;
-	tr->last_security = currentTime;
-	tr->last_update = currentTime;
-	tr->numEntertainment = 0;
-	tr->numConfort = 0;
-	tr->numSecurity = 0;
-}
-

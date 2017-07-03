@@ -14,6 +14,7 @@
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 1000
 #define INTERVAL_UPDATE 1000
+#define STOP_TIME 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
 #define STOP 2
@@ -23,14 +24,14 @@
 
 /* Estrutura padrao de mensagem de conforto/lazer */
 typedef struct confort {
-	char[64] url;
-    char[100] text;
+	char url[64];
+    char text[100];
 } confort;
 
 /* Estrutura padrao de mensagem de entretenimento */
 typedef struct entertain {
-	char[20] appName;
-	char[20] data;
+	char appName[20];
+	char data[200];
 } entertain;
 
 // PRECISA MEXER !!!!!!!!!!!!!!!!!!!!
@@ -54,6 +55,7 @@ typedef struct time_register {
 	time_t last_confort;
 	time_t last_security;
 	time_t last_update;
+	time_t start_time;
 	int numEntertainment;
 	int numConfort;
 	int numSecurity;
@@ -80,6 +82,7 @@ void buildTimeRegister(time_register *tr, long currentTime) {
 	tr->last_confort = currentTime;
 	tr->last_security = currentTime;
 	tr->last_update = currentTime;
+	tr->start_time = currentTime;
 	tr->numEntertainment = 0;
 	tr->numConfort = 0;
 	tr->numSecurity = 0;
@@ -98,6 +101,9 @@ int isTime (int mode, long currentTime, time_register *tr) {
 	} else if (mode == UPDATE &&
 			   currentTime - tr->last_update > INTERVAL_UPDATE) {
 		tr->last_update = currentTime;
+		return 1;
+	} else if (mode == STOP_TIME &&
+			   currentTime - tr->start_time > STOP_TIME) {
 		return 1;
 	}
 	
@@ -157,9 +163,9 @@ int main() {
 
 	memcpy(&d, &m.data, sizeof(car));
 	memcpy(&a, &m.TYPE, sizeof(char));
-	memcpy(&b, &m.MODE, sizeof(char));
+	memcpy(&b, &m.MODIFIER, sizeof(char));
  
-	printf("TYPE: %d\nMODE: %d\ndata: %d %d %d %d\n",
+	printf("TYPE: %d\nMODIFIER: %d\ndata: %d %d %d %d\n",
 		   a, b, d.x, d.y, d.dir, d.vel);
 
 	
@@ -168,7 +174,7 @@ int main() {
 
 	
 	// imprime atividades realizadas a cada certo intervalo
-	while(time - initial_time < 5000) {
+	while(!isTime(STOP_TIME, time, &tr)) {
 		
 		time = get_time();
 		if (!time) {
