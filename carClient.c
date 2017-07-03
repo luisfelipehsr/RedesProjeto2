@@ -5,6 +5,49 @@
 #define COMMAND_MSG 1
 #define COMMAND_EXIT 0
 
+int send_message(int mode, int socketfd, car myself, int app, int url,
+				 time_t time, time_register *tr) {
+	message msg;
+	security secr;
+	confort conf;
+	entertain ent;
+	char buf[MAX_LINE];
+	int res;
+
+	if (mode == SECURITY) {
+		
+		msg.TYPE = SECURITY;
+		msg.MODIFIER = CAR_REPORT;
+		secr.carInfo = myself;
+		memcpy(&msg.data, &secr, sizeof(secr));
+		memcpy(buf, &msg, sizeof(msg));
+		tr->last_security = time;
+
+		printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
+	
+	} else if (mode == CONFORT) {
+		msg.TYPE = CONFORT;
+		if (url == 0) {
+			strcpy(conf.url, URL_FACEBOOK);
+			strcpy(conf.text, "Olha essa foto minha dirigindo");
+		}
+
+		if (url == 1) {
+			strcpy(conf.url, URL_TWITTER);
+			strcpy(conf.text, "dirijo bem #tweetdirigindo");
+		}
+
+		memcpy(&msg.data, &conf, sizeof(conf));
+		memcpy(buf, &msg, sizeof(msg));
+
+		printf("%s\n", buf+66);
+
+	}
+
+	return send(socketfd, &buf, MAX_LINE, 0);
+}
+
+
 /* Recebe um comando do usuario e envia para o servidor.
  * Retorna: -1 se houve um erro, 0 se foi um comando de exit ou
  *          1 se foi uma mensagem. */
@@ -80,6 +123,7 @@ int main (int argc, char* argv[]) {
 	message msg;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int carNumber, hasCommands, command, response, socketfd, res, waiting;
+	int callingHelp;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
@@ -143,11 +187,12 @@ int main (int argc, char* argv[]) {
 	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
 		   client_port);
 
-	/* Estabelece um tempo de timeout de 0.2ms para qualquer receive */
-	//tv.tv_sec = 0;
-	//tv.tv_usec = 200; // == 0.2 ms
-	//setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
-	//		   sizeof(struct timeval));
+	/*timeout de 2ms para o recv */
+	tv.tv_sec = 0;
+	tv.tv_usec = 2000; // == 2 ms
+	setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
+			   sizeof(struct timeval));
+
 
 	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
        valos de tempo para as acoes */
@@ -214,14 +259,17 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 	//LUIS, NAO QUER CRIAR UMA THREAD QUE FICA ESPERANDO AS RESPOSTAS? AI, NAO POE TIMEOUT
 	//=====================================================================
 	waiting = 0; // nao esta esperando
+	callingHelp = 0; // nao esta chamando ajuda
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
-
 
 		if (isTime(UPDATE, time, &tr)) {
 			//==================================
 			//========== NOT WAITING? ==========
 			//==================================
+			if (callingHelp)
+				printf("Vou botar no youtube!!!!!!\n");
+			
 			if (!waiting || reckless){
 				srand((int) time);
 				myself.vel += (rand() % 10) + 10;
@@ -232,14 +280,20 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 
 			else if(myself.dir == 1)
 				myself.y += (myself.vel)*(myself.sent);
-
+			/*
 			msg.TYPE = SECURITY;
 			msg.MODIFIER = CAR_REPORT;
 			memcpy(&msg.data, &myself, sizeof(car));
 			memcpy(&buf, &msg, sizeof(message));
 
 			send(socketfd, &buf, MAX_LINE, 0);
-
+			*/
+			if (send_message(SECURITY, socketfd, myself, app, url, time,
+							 &tr) == -1) {
+				printf("ERROR: Couldn't send security message to server\n");
+				return 0;
+			}
+			
 			printf("ta funfando\n");
 		}
 	}

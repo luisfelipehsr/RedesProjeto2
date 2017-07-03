@@ -21,6 +21,7 @@
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 2000
 #define INTERVAL_UPDATE 1000
+#define INTERVAL_WAIT 5000
 #define STOP_TIME 20000
 #define CAR_REPORT 0
 #define ACCELERATE 1
@@ -30,6 +31,13 @@
 #define URL_TWITTER "www.twitter.com"
 #define APP_TIBIA "tibia"
 #define APP_POKEMON "pokemon"
+
+/*estrutura para armazenar carros*/
+typedef struct car {
+  int id; /*5*/
+  int x, y; /*2 digitos cada*/
+  int vel, dir, sent, tam; /*2, 1, 1, 2*/
+} car;
 
 /* Estrutura padrao de mensagem de conforto/lazer */
 typedef struct confort {
@@ -43,12 +51,10 @@ typedef struct entertain {
 	char data[60];
 } entertain;
 
-/*estrutura para armazenar carros*/
-typedef struct car {
-  int id; /*5*/
-  int x, y; /*2 digitos cada*/
-  int vel, dir, sent, tam; /*2, 1, 1, 2*/
-} car;
+/* Estrutura padrao de mensagem de seguranca */
+typedef struct security {
+	car carInfo;
+} security;
 
 /* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {

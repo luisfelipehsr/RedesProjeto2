@@ -168,22 +168,21 @@ int main(int argc, char * argv[]){
   printf("\nInformacoes do socket local:\nIP: %s\nPorta: %u\n\n", inet_ntoa((struct in_addr) conf_address.sin_addr),conf_address.sin_port);
   */
 
-/* Imprime informacoes das portas e IPs do cliente */
-	addrlen = sizeof(conf_address);
-	res = getsockname(s, (struct sockaddr *) &conf_address, &addrlen);
-	if (res == -1) {
-		printf("erro ao obter endereço do cliente\n");
-		return 0;
-	}
-	inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip, INET_ADDRSTRLEN);
-	client_port = htons(conf_address.sin_port);
-	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
-		   client_port);
+  /* Imprime informacoes das portas e IPs do cliente */
+  addrlen = sizeof(conf_address);
+  res = getsockname(s, (struct sockaddr *) &conf_address, &addrlen);
+  if (res == -1) {
+	  printf("erro ao obter endereço do cliente\n");
+	  return 0;
+  }
+  inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip, INET_ADDRSTRLEN);
+  client_port = htons(conf_address.sin_port);
+  printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
+		 client_port);
 
-  
+  /*timeout de 2ms para o recv */
   tv.tv_sec = 0;
   tv.tv_usec = 2000; // == 2 ms
-  //timeout de 2ms para o recv
   setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval));
 
   n_cars = atoi(argv[2]);
