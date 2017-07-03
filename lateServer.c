@@ -33,12 +33,12 @@ int answer(int sockfd, message msg){
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "A pessoa que voce NAO quer pegar curtiu seu status: %s",
+				snprintf(out.data, sizeof(out.data), "A pessoa que voce NAO quer pegar curtiu seu status: %s",
 							conf.text);
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "A pessoa que voce QUER pegar curtiu seu status: %s",
+				snprintf(out.data, sizeof(out.data), "A pessoa que voce QUER pegar curtiu seu status: %s",
 							conf.text);
 			}
 
@@ -47,12 +47,12 @@ int answer(int sockfd, message msg){
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "A pessoa que voce NAO quer pegar retweetou: %s",
+				snprintf(out.data, sizeof(out.data), "A pessoa que voce NAO quer pegar retweetou: %s",
 							conf.text);
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "A pessoa que voce QUER pegar retweetou: %s",
+				snprintf(out.data, sizeof(out.data), "A pessoa que voce QUER pegar retweetou: %s",
 							conf.text);
 			}
 
@@ -65,12 +65,12 @@ int answer(int sockfd, message msg){
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "Outro jogador te matou e roubou suas coisas quando voce tentou %s\n",
+				snprintf(out.data, sizeof(out.data), "Outro jogador te matou e roubou suas coisas quando voce tentou %s\n",
 							ent.data);
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "Voce conseguiu realizar \"%s\" com sucesso! Congratz! GG!\n",
+				snprintf(out.data, sizeof(out.data), "Voce conseguiu realizar \"%s\" com sucesso! Congratz! GG!\n",
 							ent.data);
 			}
 
@@ -79,12 +79,12 @@ int answer(int sockfd, message msg){
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "Voce nao conseguiu %s...\n",
+				snprintf(out.data, sizeof(out.data), "Voce nao conseguiu %s...\n",
 							ent.data);
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				sprintf(out.data, "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
+				snprintf(out.data, sizeof(out.data), "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
 							ent.data, n);
 			}
 
