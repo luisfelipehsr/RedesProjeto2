@@ -4,9 +4,8 @@
 #include "header.h"
 
 #define LISTEN_PORT 12345
-#define SERVER_PORT 23456
 #define MAX_PENDING 5
-#define MAX_LINE 256
+
 
 int main(int argc, char * argv[]){
 
