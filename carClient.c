@@ -208,12 +208,20 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			  volta loop
 
 	 */
+
+
+	//=====================================================================
+	//LUIS, NAO QUER CRIAR UMA THREAD QUE FICA ESPERANDO AS RESPOSTAS? AI, NAO POE TIMEOUT
+	//=====================================================================
 	waiting = 0; // nao esta esperando
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
 
 
 		if (isTime(UPDATE, time, &tr)) {
+			//==================================
+			//========== NOT WAITING? ==========
+			//==================================
 			if (!waiting || reckless){
 				srand((int) time);
 				myself.vel += (rand() % 10) + 10;

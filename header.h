@@ -25,6 +25,7 @@
 #define CAR_REPORT 0
 #define ACCELERATE 1
 #define CALL_RESCUE 3
+#define VEL_WAIT_LIMIT 45
 #define URL_FACEBOOK "www.facebook.com"
 #define URL_TWITTER "www.twitter.com"
 #define APP_TIBIA "tibia"
@@ -33,7 +34,7 @@
 /* Estrutura padrao de mensagem de conforto/lazer */
 typedef struct confort {
 	char url[64];
-    char text[100];
+  char text[100];
 } confort;
 
 /* Estrutura padrao de mensagem de entretenimento */
@@ -84,8 +85,8 @@ void buildTimeRegister(time_register *tr, long currentTime) {
 /* Determina se esta no horario de algo de acordo com um intervalo */
 int isTime (int mode, long currentTime, time_register *tr) {
 	if (mode == ENTERTAINMENT &&
-		currentTime - tr->last_entertainment > INTERVAL_ENTERTAINMENT) {
-	    tr->last_entertainment = currentTime;
+				 currentTime - tr->last_entertainment > INTERVAL_ENTERTAINMENT) {
+	  tr->last_entertainment = currentTime;
 		return 1;
 	} else if (mode == CONFORT &&
 			   currentTime - tr->last_confort > INTERVAL_CONFORT) {
@@ -99,7 +100,7 @@ int isTime (int mode, long currentTime, time_register *tr) {
 			   currentTime - tr->start_time > STOP_TIME) {
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -109,8 +110,8 @@ long get_time () {
 	long time_sec;
 	long time_ms;
 
-	if (clock_gettime(CLOCK_REALTIME, &time))
-		return 0;
+	if (clock_gettime(CLOCK_REALTIME, &time)) return 0;
+
 	time_sec = time.tv_sec;
 	time_ms = (long) (time.tv_nsec / 1.0e6);
 	time_ms += (long) time_sec * (1000);
