@@ -12,8 +12,8 @@ void remove_msg(message_buffer *msgbuf, int i, int n_msgs) {
   for (j = i; j < n_msgs; j++) {
     msgbuf[j].timestamp = msgbuf[j+1].timestamp;
     msgbuf[j].msg.TYPE = msgbuf[j+1].msg.TYPE;
-    msgbuf[j].msg.MODE = msgbuf[j+1].msg.MODE;
-    msgbuf[j].msg.data = msgbuf[j+1].msg.data;
+    msgbuf[j].msg.MODIFIER = msgbuf[j+1].msg.MODIFIER;
+    strcpy(msgbuf[j].msg.data, msgbuf[j+1].msg.data);
   }
 }
 
@@ -85,7 +85,7 @@ int answer(int sockfd, message msg){
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
 				sprintf(out.data, "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
-							ent.data, &n);
+							ent.data, n);
 			}
 
 			memcpy(&out, buf, sizeof(message));
@@ -93,7 +93,7 @@ int answer(int sockfd, message msg){
 	}
 
 
-	return send(s, &buf, MAX_LINE, 0);
+	return send(sockfd, &buf, MAX_LINE, 0);
 }
 
 
@@ -156,15 +156,15 @@ int main(int argc, char * argv[]){
 
   printf("Conectado\n");
 
-  getsockname(s, (struct sockaddr*)&socket_address, len);
+  getsockname(s, (struct sockaddr*)&socket_address, &len);
   printf("\nInformacoes do socket local:\nIP: %s\nPorta: %d\n\n", inet_ntoa((struct in_addr)socket_address.sin_addr),socket_address.sin_port);
 
   tv.tv_sec = 0;
   tv.tv_usec = 2000; // == 2 ms
   //timeout de 2ms para o recv
-  setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval))
+  setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval));
 
-  n_cars = argv[2];
+  n_cars = atoi(argv[2]);
   n_msgs = 0;
 
   cars = (car *)calloc(n_cars, sizeof(car));
@@ -177,7 +177,7 @@ int main(int argc, char * argv[]){
     bytesreceived = recv(s, &buf, MAX_LINE, 0);
 
     //timeout retorna SOCKET_ERROR
-    if ((bytesreceived != SOCKET_ERROR) && (n_msgs < MAX_MSG_CAR*n_cars)){
+    if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
       msgbuf[n_msgs].timestamp = get_time();
       memcpy(buf, &msgbuf[n_msgs].msg, sizeof(message));
       n_msgs++;

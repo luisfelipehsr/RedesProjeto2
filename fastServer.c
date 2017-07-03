@@ -16,7 +16,6 @@ int main(int argc, char * argv[]){
   int i, sp, sa, new_s, sockfd, cliente_num, maxfd, nready, clientes[FD_SETSIZE];
   fd_set todos_fds, novo_set;
   int bytessent, bytesreceived;
-  int len;
 
 
 /*****************************************************************************/
@@ -74,7 +73,7 @@ int main(int argc, char * argv[]){
       exit(1);
     }
 
-    if(FD_ISSET(s, &novo_set)) {
+    if(FD_ISSET(sp, &novo_set)) {
       len = sizeof(socket_address);
       if ((new_s = accept(sp, (struct sockaddr *)&socket_address, &len)) < 0) {
         perror("simplex-talk: accept");
