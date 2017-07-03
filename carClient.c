@@ -15,7 +15,8 @@ void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
 	printf("Total messages received:\n");
 	printf("CONFORT ENTERTAINMENT ACCELERATE BREAK CALL_HELP\n");
 	printf("Maximum delay: %ld\n", delay);
-	printf("%7d %13d %10d %5d %9d\n");
+	printf("%7d %13d %10d %5d %9d\n", mc.rcvd_confort, mc.rcvd_entertainment,
+		   mc.rcvd_accelerate, mc.rcvd_break, mc.rcvd_call_help);
 	printf("\nCar status:\n");
 	printf("x: %4d y: %4d vel: %3d dir: %2d\n",
 		   myself.x, myself.y, myself.vel, myself.dir);
@@ -43,7 +44,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		memcpy(&msg.data, &secr, sizeof(secr));
 		memcpy(buf, &msg, sizeof(msg));
 
-		printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
+		//printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
 	
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
@@ -57,7 +58,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 			strcpy(conf.text, "dirijo bem #tweetdirigindo");
 		}
 
-		printf("%s\n", conf.text);
+		//printf("%s\n", conf.text);
 		
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
@@ -145,22 +146,23 @@ int main (int argc, char* argv[]) {
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int carNumber, hasCommands, command, response, socketfd, res, waiting;
 	int callingHelp, numUpdate;
+	double velocity;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time, rcv_time, START_MOVING;
+	time_t time, rcv_time, maxDelay, START_MOVING;
 	int app, url, reckless;
 
 	/* verificação de argumentos */
-	if (argc == 13) {
+	if (argc == 12) {
 		host = argv[1];
 		carNumber = atoi(argv[2]);
 		buildCar(&myself, argv, &app, &url, &reckless);
 		printf("Car %d created\n", carNumber);
 
 	} else {
-		printf("ERROR: Twelve arguments should be provided. %d given.\n", argc-1);
+		printf("ERROR: Eleven arguments should be provided. %d given.\n", argc-1);
 		return 0;
 	}
 
@@ -268,6 +270,10 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 					   print("Jogo para quem esta dirigindo recebeu msg")
 					se eh de lazer/conforto:
 					   print("Pessoa que voce nao vai pegar postou foto")
+					pega tempo que a mensagem foi enviada e tira do horario
+					   o resultado eh o maximo delay
+					se resultado > maximo delay
+					   maximo delay = resultado
 
           se deu timeout:
 				     faca nada
@@ -284,6 +290,7 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 	buildMsgCounter(&mc);
 	waiting = 0; // nao esta esperando
 	callingHelp = 0; // nao esta chamando ajuda
+	maxDelay = 0;
 	rcv_time = 0; // DEVE SER SETADO QUANDO TIVER RECEBIDO MSG!!!!!!!!!
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
@@ -297,9 +304,11 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			
 			if (!waiting || reckless){
 				srand((int) time);
-				myself.vel += (rand() % 10) + 10;
+				myself.vel += (rand() % 3);
+				if (myself.vel > 20)
+					myself.vel = 20;
 			}
-
+			/* Atualiza posicao do carro */
 			if (myself.dir == 0)
 				myself.x += (myself.vel)*(myself.sent);
 
@@ -314,8 +323,9 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			send(socketfd, &buf, MAX_LINE, 0);
 			*/
 			
-		    printUpdate(numUpdate, myself, time, 
+		    printUpdate(numUpdate, myself, maxDelay, mc);
 			numUpdate += 1;
+			
 		}
 
 		if (isTime(SECURITY, time, &tr)) {

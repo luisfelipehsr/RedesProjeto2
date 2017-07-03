@@ -17,7 +17,7 @@
 #define CONFORT 3
 #define UPDATE 4
 #define STOP_SIMULATION 5
-#define INTERVAL_SECURITY 50
+#define INTERVAL_SECURITY 200
 #define INTERVAL_ENTERTAINMENT 20
 #define INTERVAL_CONFORT 2000
 #define INTERVAL_UPDATE 1000
@@ -45,6 +45,7 @@ typedef struct msg_counter {
 	int rcvd_entertainment;
 	int rcvd_accelerate;
 	int rcvd_break;
+	int rcvd_call_help;
 } msg_counter;
 
 /*estrutura para armazenar carros*/
@@ -114,6 +115,7 @@ void buildMsgCounter(msg_counter *mc) {
 	mc->rcvd_entertainment = 0;
 	mc->rcvd_accelerate = 0;
 	mc->rcvd_break = 0;
+	mc->rcvd_call_help = 0;
 }
 
 
@@ -130,6 +132,10 @@ int isTime (int mode, long currentTime, time_register *tr) {
 	} else if (mode == UPDATE &&
 			   currentTime - tr->last_update > INTERVAL_UPDATE) {
 		tr->last_update = currentTime;
+		return 1;
+	} else if (mode == SECURITY &&
+			   currentTime - tr->last_security > INTERVAL_SECURITY) {
+		tr->last_security = currentTime;
 		return 1;
 	} else if (mode == STOP_SIMULATION &&
 			   currentTime - tr->start_time > STOP_TIME) {
