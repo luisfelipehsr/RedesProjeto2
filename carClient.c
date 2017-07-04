@@ -26,16 +26,12 @@ void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
 
 int send_message(int mode, int socketfd, car myself, int app, int url,
 				 time_t time) {
-	message msg;
+	message msg, b;
 	security secr;
 	confort conf;
 	entertain ent;
 	char buf[MAX_LINE];
-	long i;
-	char a;
 
-	a = SECURITY;
-	printf("aaaaaa: %d\n", a);
 
 	msg.SENDTIME = time;
 	
@@ -51,7 +47,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		//printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
 	} else if (mode == ENTERTAINMENT) {
 		msg.TYPE = ENTERTAINMENT;
-		msg.MODIFIER = 0;
+		msg.MODIFIER = '0';
 		if (url == 0) {
 			strcpy(ent.appName, APP_TIBIA);
 			strcpy(ent.data, "Atacou um orc");
@@ -69,7 +65,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
-		msg.MODIFIER = 0;
+		msg.MODIFIER = '0';
 		if (url == 0) {
 			strcpy(conf.url, URL_FACEBOOK);
 			strcpy(conf.text, "Olha essa foto minha dirigindo");
@@ -82,16 +78,16 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
-		memcpy(buf, &msg, sizeof(msg));
+		//memcpy(buf, &msg, sizeof(msg));
 	}
 
-	for (i = 0; i < 40; i++)
-		printf("%c ", buf[i]);
-	printf("\n");
-
-
+	memcpy(&b, buf, sizeof(b));
+	msg.SENDTIME = '0';
+	printf("TEMPO BUFFER: %ld\n", msg.SENDTIME);
+	printf("TEMPO: %ld\n", time);
 	
-	return send(socketfd, buf, MAX_LINE, 0);
+	//return send(socketfd, buf, MAX_LINE, 0);
+	return send(socketfd, &msg, MAX_LINE, 0);
 }
 
 
@@ -172,16 +168,14 @@ int main (int argc, char* argv[]) {
 	const char *host;
 	msg_counter mc;
 	car myself;
-	message msg;
-	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
-	int carNumber, hasCommands, command, response, socketfd, res, waiting;
+	char client_ip[INET_ADDRSTRLEN];
+	int carNumber, socketfd, res, waiting;
 	int callingHelp, numUpdate;
-	double velocity;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time, rcv_time, maxDelay, START_MOVING;
+	time_t time, rcv_time, maxDelay;
 	int app, url, reckless;
 
 	/* verificação de argumentos */

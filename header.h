@@ -11,22 +11,22 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define CLOUD 0
-#define SECURITY 1
-#define ENTERTAINMENT 2
-#define CONFORT 3
-#define UPDATE 4
-#define STOP_SIMULATION 5
+#define CLOUD '0'
+#define SECURITY '1'
+#define ENTERTAINMENT '2'
+#define CONFORT '3'
+#define UPDATE '4'
+#define STOP_SIMULATION '5'
 #define INTERVAL_SECURITY 200
 #define INTERVAL_ENTERTAINMENT 200
 #define INTERVAL_CONFORT 2000
 #define INTERVAL_UPDATE 1000
 #define INTERVAL_WAIT 5000
 #define STOP_TIME 20000
-#define CAR_REPORT 0
-#define ACCELERATE 1
-#define BREAK
-#define CALL_RESCUE 3
+#define CAR_REPORT '0'
+#define ACCELERATE '1'
+#define BREAK '2'
+#define CALL_RESCUE '3'
 #define VEL_WAIT_LIMIT 45
 #define MAX_LINE 256
 #define URL_FACEBOOK "www.facebook.com"
@@ -83,7 +83,7 @@ typedef struct message {
 
 typedef struct message_buffer {
 	message msg;
-  long timestamp;
+	long timestamp;
 } message_buffer;
 
 

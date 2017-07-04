@@ -31,11 +31,11 @@ int receive_command(int clientfd, char *buffer, size_t buffer_size) {
 
 	memcpy(&m, &buffer, buffer_size);
 
-	for(i = 0; i < 40; i++) {
+	for(i = 8; i < 40; i++) {
 		printf("%c ", buffer[i]);
 	}
 	
-    printf("\nReceived: %d %d", m.MODIFIER, m.TYPE);
+    printf("\nReceived: %ld %c %c", (long) m.SENDTIME, m.MODIFIER, m.TYPE);
 
 	/* Imprime IP do cliente que enviou a mensagem */
 	addrlen = sizeof(client_address);
