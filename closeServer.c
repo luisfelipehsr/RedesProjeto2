@@ -5,13 +5,21 @@
 #define MAX_LINE 256
 #define MAX_PENDING 5
 
-#define COMMAND_EXIT 1
-#define COMMAND_MSG 0
+void send_message(char type, char modifier, int i, int *clients, message *msg) {
+	char buf[MAX_LINE];
+	
+	if (type == ENTERTAINMENT || type == CONFORT) {
+		memcpy(buf, &msg, MAX_LINE);
+		if(send(clientfd, buf, MAX_LINE, 0) == -1)
+			printf("ERROR: Couldn't send message to client %d\n", i);
+	} else if (type == SECURITY) {
+		
+												 
+
 
 /* Recebe um comando do cliente. 
  * Retorna: -1 se um erro ocorreu, 0 se o cliente enviou um comando de exit ou
- *          1 se o cliente enviou uma linha de texto.
- */
+ *          1 se o cliente enviou uma mensagem. */
 int recv_message(int clientfd, message *msg) {
 	int res;
 	char buffer[MAX_LINE];
@@ -44,7 +52,7 @@ void dropClient(int i, int *clients, fd_set *all_fds) {
 }
 
 /* Recebe uma mensagem e a trata de acordo */
-void processClient(int i, int *clients, fd_set *all_fds) {
+void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 	char buf[MAX_LINE];
 	int clientfd, res;
 	message msg;
@@ -57,12 +65,19 @@ void processClient(int i, int *clients, fd_set *all_fds) {
 		if (res == -1)
 			printf("Dropping client %d\n", i);
 		dropClient(i, clients, all_fds);
-						
-	} else {
-		memcpy(buf, &msg, MAX_LINE);
-		if(send(clientfd, buf, MAX_LINE, 0) == -1)
-			printf("ERROR:Couldn't send message to client %d\n", i);
+		return;
 	}
+
+	
+
+
+
+	
+	
+	memcpy(buf, &msg, MAX_LINE);
+	if(send(clientfd, buf, MAX_LINE, 0) == -1)
+		printf("ERROR:Couldn't send message to client %d\n", i);
+	
 }
 
 /* Funcao principal. Ignora argumentos */
@@ -75,6 +90,7 @@ int main() {
     fd_set read_set, all_fds;
 	unsigned int addrlen;
 	unsigned short client_port;
+	car cars[FD_SETSIZE];
 
 	/* criação da estrutura de dados de endereço */
 	bzero((char *)&socket_address, sizeof(socket_address));
@@ -183,24 +199,18 @@ int main() {
 				continue;
 		} // fim if FD_ISSET listen
 
-		/* adiciona dados dos clientes de acordo com read_set */			
+		/* se um cliente existe num dado indice e enviou algum conteudo, recebe
+		 * mensagem e processa de acordo. Envia respostas ou, se houver um erro,
+		 * remove o cliente */			
 		for (i = 0; i <= maximumfd_index; i++) {
 			clientfd = clients[i];
-
-			/* se o cliente existe neste indice, recebe mensagem e
-			 * envia resposta de acordo, ou remove o cliente se houver
-			 * um erro                                                 */
-			if (clientfd >= 0) {
-				if (FD_ISSET(clientfd, &read_set))
-					processClient(i, clients, &all_fds);	
-			}
+			if (clientfd >= 0 && FD_ISSET(clientfd, &read_set))
+				processClient(i, clients, &all_fds, cars);	
 		} // fim for FD_ISSET clientfd
 	} // fim while(1)
-
-
-	printf(" Server disabled\n");
 	
 	/* Fecha descritor do socket de listen e de todos os accept*/
+	printf(" Server disabled\n");
 	for (i = 0; i < FD_SETSIZE; i++) {
 		clientfd = clients[i];
 		if (clientfd >= 0)
