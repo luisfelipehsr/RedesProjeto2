@@ -5,16 +5,68 @@
 #define MAX_LINE 256
 #define MAX_PENDING 5
 
-void send_message(char type, char modifier, int i, int *clients, message *msg) {
+void send_message(char type, char modifier, char *data, int i, int *clients) {
 	char buf[MAX_LINE];
+	confort conf;
+	entertain ent;
+	security secr;
+	message msg;
+	int src, clientfd;
 	
 	if (type == ENTERTAINMENT || type == CONFORT) {
-		memcpy(buf, &msg, MAX_LINE);
-		if(send(clientfd, buf, MAX_LINE, 0) == -1)
-			printf("ERROR: Couldn't send message to client %d\n", i);
-	} else if (type == SECURITY) {
+		// mensagem vinda de um carro
+		if (modifier == CARCLIENT && type == CONFORT) {
+			msg.TYPE = CONFORT;
+			memcpy(&conf, data, sizeof(conf));
+			snprintf(conf.source, 20, "%d", i); // anota carro origem
+			memcpy(&msg.data, &conf, sizeof(conf));
+			clientfd = clients[0]; // envia para a nuvem
+		}
+		if (modifier == CARCLIENT && type == ENTERTAINMENT) {
+			msg.TYPE = ENTERTAINMENT;
+			memcpy(&ent, data, sizeof(ent));
+			snprintf(ent.source, 20, "%d", i); // anota carro origem
+			memcpy(&msg.data, &ent, sizeof(ent));
+			clientfd = clients[0]; // envia para a nuvem
+		}
+		// mensagem vinda do servico na nuvem
+		if (modifier == CLOUD && type == CONFORT) {
+			/* Copia conteudo da mensagem */
+			msg.TYPE = CONFORT;
+			msg.MODIFIER = CLOUD;
+			memcpy(&conf, data, sizeof(conf));
+			memcpy(&msg.data, &conf, sizeof(conf));
+			/* Reenvia para o carro de origem */
+			src = atoi(conf.source);
+			clientfd = clients[src];
+		}
+
+		if (modifier == CLOUD && type == ENTERTAINMENT) {
+			/* Copia conteudo da mensagem */
+			msg.TYPE = ENTERTAINMENT;
+			msg.MODIFIER = CLOUD;
+			memcpy(&ent, data, sizeof(ent));
+			memcpy(&msg.data, &ent, sizeof(ent));
+			/* Reenvia para o carro de origem */
+			src = atoi(ent.source);
+			clientfd = clients[src];
+		}
 		
-												 
+		
+
+		
+	} else {
+		msg.TYPE = type;
+		msg.MODIFIER = modifier;
+		memcpy(&msg.data, data, sizeof(secr));
+		clientfd = clients[i];
+		
+	}
+
+	memcpy(buf, &msg, MAX_LINE);
+	if(send(clientfd, buf, MAX_LINE, 0) == -1)
+		printf("ERROR: Couldn't send message to client %d\n", i);
+}						 
 
 
 /* Recebe um comando do cliente. 
@@ -68,16 +120,14 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 		return;
 	}
 
+	msg.MODIFIER = BREAK;
+	send_message(msg.TYPE, msg.MODIFIER, msg.data, i, clients);
 	
-
-
-
-	
-	
+	/*
 	memcpy(buf, &msg, MAX_LINE);
 	if(send(clientfd, buf, MAX_LINE, 0) == -1)
 		printf("ERROR:Couldn't send message to client %d\n", i);
-	
+	*/
 }
 
 /* Funcao principal. Ignora argumentos */

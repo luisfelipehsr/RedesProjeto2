@@ -45,7 +45,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 
 	} else if (mode == ENTERTAINMENT) {
 		msg.TYPE = ENTERTAINMENT;
-		msg.MODIFIER = '0';
+		msg.MODIFIER = CLOUD;
 		if (url == 0) {
 			strcpy(ent.appName, APP_TIBIA);
 			strcpy(ent.data, "Atacou um orc");
@@ -61,7 +61,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
-		msg.MODIFIER = '0';
+		msg.MODIFIER = CLOUD;
 		if (url == 0) {
 			strcpy(conf.url, URL_FACEBOOK);
 			strcpy(conf.text, "Olha essa foto minha dirigindo");
