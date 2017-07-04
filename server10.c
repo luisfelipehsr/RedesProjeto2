@@ -61,30 +61,53 @@ char* msgtostr(message msg){
   return str;
 }
 
-int* checkcolision(car cars[], int n){
-  int tempo_ii, tempo_ij, tempo_fi, tempo_fj;
+int* checkcolision(car cars[], int n, car obj){
+  int tempo_io, tempo_ij, tempo_fo, tempo_fj;
 
-  for (size_t i = 0; i < n-1; i++) {
-    for (size_t j = i+1; j < n; j++) {
-      if(cars[i].dir != cars[j].dir){
-        if (((cars[i].dir == 1)&&(cars[i].y*cars[i].sent < 0)&&(cars[j].x*cars[j].sent < 0)) ||
-            ((cars[i].dir == 0)&&(cars[i].x*cars[i].sent < 0)&&(cars[j].y*cars[j].sent < 0))) {
-          tempo_ii = cars[i].x / cars[i].vel;
+  //se o carro atual estiver indo em direção ao cruzamento
+  if(((obj.dir == 1) && (obj.y*obj.sent < 0)) ||
+     ((obj.dir == 0) && (obj.x*obj.sent < 0))){
+    for (size_t j = 0; j < n; j++) {
+      if((obj.dir != cars[j].dir)){
+        if (((obj.dir == 1)&&(cars[j].x*cars[j].sent < 0)) ||
+            ((obj.dir == 0)&&(cars[j].y*cars[j].sent < 0))) {
+          tempo_io = obj.x / obj.vel;
           tempo_ij = cars[j].x / cars[j].vel;
-          tempo_fi = tempo_ii + (cars[i].tam / cars[i].vel);
+          tempo_fo = tempo_io + (obj.tam / obj.vel);
           tempo_fj = tempo_ij + (cars[j].tam / cars[j].vel);
 
-          if (tempo_ii - tempo_ij < COL_LIMIT) || (tempo_ij - tempo_ii < COL_LIMIT) {
+          if (tempo_io - tempo_ij < COL_LIMIT) || (tempo_ij - tempo_io < COL_LIMIT) {
             /* chamar ambulancia */
-          } else if ((tempo_ij >= tempo_ii) && (tempo_ij <= tempo_fi)) {
+          } else if ((tempo_ij >= tempo_io) && (tempo_ij <= tempo_fo)) {
             /* j freia, i acelera */
-          } else if ((tempo_ii >= tempo_ij) && (tempo_ii <= tempo_fj)) {
+          } else if ((tempo_io >= tempo_ij) && (tempo_io <= tempo_fj)) {
             /* i freia, j acelera */
           }
         }
       }
     }
   }
+
+/*  for (size_t j = 0; j < n; j++) {
+    if(obj.dir != cars[j].dir){
+      if (((obj.dir == 1)&&(obj.y*obj.sent < 0)&&(cars[j].x*cars[j].sent < 0)) ||
+          ((obj.dir == 0)&&(obj.x*obj.sent < 0)&&(cars[j].y*cars[j].sent < 0))) {
+        tempo_io = obj.x / obj.vel;
+        tempo_ij = cars[j].x / cars[j].vel;
+        tempo_fo = tempo_io + (obj.tam / obj.vel);
+        tempo_fj = tempo_ij + (cars[j].tam / cars[j].vel);
+
+        if (tempo_io - tempo_ij < COL_LIMIT) || (tempo_ij - tempo_io < COL_LIMIT) {
+          /* chamar ambulancia
+        } else if ((tempo_ij >= tempo_io) && (tempo_ij <= tempo_fo)) {
+          /* j freia, i acelera
+        } else if ((tempo_io >= tempo_ij) && (tempo_io <= tempo_fj)) {
+          /* i freia, j acelera
+        }
+      }
+    }
+  }
+*/
 
   return "\0";
 }
