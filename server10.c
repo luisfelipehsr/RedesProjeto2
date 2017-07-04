@@ -79,9 +79,9 @@ int* checkcolision(car cars[], int n, car obj){
           if (tempo_io - tempo_ij < COL_LIMIT) || (tempo_ij - tempo_io < COL_LIMIT) {
             /* chamar ambulancia */
           } else if ((tempo_ij >= tempo_io) && (tempo_ij <= tempo_fo)) {
-            /* j freia, i acelera */
+            /* j freia, obj acelera */
           } else if ((tempo_io >= tempo_ij) && (tempo_io <= tempo_fj)) {
-            /* i freia, j acelera */
+            /* obj freia, j acelera */
           }
         }
       }
