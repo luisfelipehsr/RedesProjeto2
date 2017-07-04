@@ -18,10 +18,14 @@ def main():
     for i in range(numberCars):
         carParameters = re.findall(r"[-]?[\w]+", carList[i])
         print(carParameters)
-        cmd = ["konsole", "--noclose", "-e", "./carClient", sys.argv[2], str(i)]
+        #cmd = ["konsole", "-e", "./carClient", sys.argv[2], str(i)]
+        cmd = ["./carClient", sys.argv[2], str(i)]
         for parameter in carParameters:
             cmd += [parameter]
-        Popen(cmd)
+        fileName = "arq" + str(i) + ".out"
+        file = open(fileName, "w")
+        Popen(cmd, stdout=file)
+        file.close()
 
 if __name__ == "__main__":
     main()

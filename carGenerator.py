@@ -2,15 +2,15 @@ import random
 
 def main():
     fparameters = open("carParameters", "w")
-    cars = 10
+    cars = 50
     for i in range(cars):
         if i < cars/2:
-            x = random.randrange(-50, 51, 10)
+            x = random.randrange(-150, 151, 20)
             y = 0
             direction = 0
         else:
             x = 0
-            y = random.randrange(-50, 51, 10)
+            y = random.randrange(-150, 151, 20)
             direction = 1
 
         app = random.randrange(0, 2, 1)

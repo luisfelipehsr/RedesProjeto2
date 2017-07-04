@@ -30,12 +30,12 @@ int receive_command(int clientfd, char *buffer, size_t buffer_size) {
 	}
 
 	memcpy(&m, &buffer, buffer_size);
-
+	/*
 	for(i = 0; i < 40; i++) {
 		printf("%c ", buffer[i]);
 	}
-	
-    printf("\nReceived: %s %c %c", m.SENDTIME, m.MODIFIER, m.TYPE);
+	*/
+    //printf("\nReceived: %s %c %c", m.SENDTIME, m.MODIFIER, m.TYPE);
 
 	/* Imprime IP do cliente que enviou a mensagem */
 	addrlen = sizeof(client_address);
@@ -46,7 +46,7 @@ int receive_command(int clientfd, char *buffer, size_t buffer_size) {
 		return 0;
 	}
 	inet_ntop(AF_INET, &(client_address.sin_addr), client_ip, INET_ADDRSTRLEN);
-	printf("---------\nMensagem enviada por: %s:%u\n", client_ip, client_port);
+	//printf("---------\nMensagem enviada por: %s:%u\n", client_ip, client_port);
 	
 	/* verifica se eh um comando de saida */
 	//res = strcmp(buffer, "exit\n");
@@ -103,7 +103,7 @@ int main() {
 	total_connections = 0;
     /* Aguarda e aceita ate 5 conexoes simultaneas.
        A conexao #MAX_TOTAL_CONNECTIONS eh condicao de parada do server */
-	while (total_connections < MAX_TOTAL_CONNECTIONS) {
+	while (1) {
 
 		/* usa read_set para saber os clientes com dados para leitura */
 		read_set = all_fds;
@@ -139,6 +139,11 @@ int main() {
 				printf("ERROR Numero maximo de clientes atingido.\n");
 				exit(1);
 			}
+
+			if (i == 0)
+				printf("Servico na nuvem conectado.\n");
+			else
+				printf("Novo carro conectado. Indice local: %d\n", i);
 			
 			/* Imprime informacoes das portas e IPs do cliente */
 			addrlen = sizeof(conf_address);
@@ -174,18 +179,17 @@ int main() {
 			/* se o cliente existe neste indice, recebe mensagem */
 			if (clientfd >= 0) {
 				if (FD_ISSET(clientfd, &read_set)) {
-
+					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					/* Recebe comandos do cliente. 
-					 * Se mensagem, imprime na tela e envia eco.
-					 * Se for um exit, termina a aplicacao */
+					 * E envia respostas de acordo */
 					res = receive_command(clientfd, buf, MAX_LINE);
 
-					buf[17] = BREAK;
+					
 					
 				    if(send(clientfd, buf, MAX_LINE-1, 0) == -1)
 						printf("ERROR: Couldn't send message to client %d\n",
 							   i);
-				}
+				} //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			}
 		}
 	} // fim while total_connections

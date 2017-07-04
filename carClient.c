@@ -22,7 +22,6 @@ void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
 		   myself.x, myself.y, myself.vel, myself.dir);
 }
 
-	
 
 int send_message(int mode, int socketfd, car myself, int app, int url,
 				 time_t time) {
@@ -43,7 +42,6 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		memcpy(&msg.data, &secr, sizeof(secr));
 		memcpy(buf, &msg, sizeof(msg));
 
-		//printf("id: %d %d x: %d %d\n", myself.id, secr.carInfo.id, myself.x, secr.carInfo.x);
 	} else if (mode == ENTERTAINMENT) {
 		msg.TYPE = ENTERTAINMENT;
 		msg.MODIFIER = '0';
@@ -56,8 +54,6 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 			strcpy(ent.data, "A wild code appears");
 		}
 
-		//printf("%s\n", conf.text);
-		
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &ent, sizeof(ent));
 		memcpy(buf, &msg, sizeof(msg));
@@ -73,18 +69,12 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 			strcpy(conf.url, URL_TWITTER);
 			strcpy(conf.text, "dirijo bem #tweetdirigindo");
 		}
-		//printf("%s\n", conf.text);
 		
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
 	    
 	}
 
-	/*	memcpy(&b, buf, sizeof(b));
-	printf("TEMPO BUFFER: %s\n", msg.SENDTIME);
-	printf("TEMPO: %ld\n", time);
-	*/
-	//return send(socketfd, buf, MAX_LINE, 0);
 	return send(socketfd, &msg, MAX_LINE, 0);
 }
 
@@ -148,9 +138,15 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 			if (msg.MODIFIER == CALL_RESCUE) { // chamar ambulancia
 				myself->vel = 0;
 			    mc->rcvd_call_help += 1;
-				printf("\n\n--------------------------");
-				printf("\nVOU BOTAR NO YOUTUBE!!!!!!!\n\n");
-				printf("--------------------------\n\n");
+				if (reckless) {
+					printf("\n\n--------------------------");
+					printf("\nVOU BOTAR NO YOUTUBE!!!!!!!\n\n");
+					printf("--------------------------\n\n");
+				} else {
+					printf("\n\n--------------------------");
+					printf("\nWIIIIIOOOOOOMMMMMM WIIIIIIOOOOOOMMMM!!!!!!!\n\n");
+					printf("--------------------------\n\n");
+				}
 			}
 		}
 	}
@@ -198,7 +194,8 @@ int main (int argc, char* argv[]) {
 		printf("Car %d created\n", carNumber);
 
 	} else {
-		printf("ERROR: Eleven arguments should be provided. %d given.\n", argc-1);
+		printf("ERROR: Eleven arguments should be provided. %d given.\n",
+			   argc-1);
 		return 0;
 	}
 
@@ -256,67 +253,7 @@ int main (int argc, char* argv[]) {
 	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
        valos de tempo para as acoes */
 	time = get_time();
-	buildTimeRegister(&tr, time);
-
-
-	/* Loop que faz cagadas no transito */
-	/*
-ta na hora(tipo intervalo, tempo x, tempo atual):
- 			   tempo atual - tempo x
-			   se eh atualizacao ou seguranca:
-			   	  tempo atual- tempo x >= 1
-			   se eh entretenimento:
-			   	  tempo atual - tempo x >= 0.03
-			   se eh conforto:
-            tempo atual - tempo x >= 0.05
-
-				essas coisas retornam true ou false
-
-
-
-			enquanto() :
-				checar a hora
-
-				se nao esta esperando E nao eh reckless E ta na hora:
-				   atualiza velocidade (pode receber um incremento rand)
-				   atualiza posicao
-				   atualiza tempo da ultima atualizacao
-				se eh pra chamar a ambulancia:
-				   print("VOU BOTAR NO YOUTUBE")
-
-				se ta na hora de seguranca:
-				   envia mensagem de seguranca
-
-				se ta na hora de entretenimento:
-				   gera mensagem aleatoria de entretenimento
-				   manda mensagem
-				se conforto:
-				   mesmo de cima
-
-				recebe uma mensagem (timeout de 0.01, vulgo 10ms good ping)
-				se recebeu mensagem:
-				    se eh de seguranca:
-				        se eh de frear:
-					  	    velocidade <- 0
-						se eh de acelerar:
-						    velocidade + 5
-					  se eh de chamar ambulancia:
-						    chamar ambulancia <- True
-					se eh de entretenimento:
-					   print("Jogo para quem esta dirigindo recebeu msg")
-					se eh de lazer/conforto:
-					   print("Pessoa que voce nao vai pegar postou foto")
-					pega tempo que a mensagem foi enviada e tira do horario
-					   o resultado eh o maximo delay
-					se resultado > maximo delay
-					   maximo delay = resultado
-
-          se deu timeout:
-				     faca nada
-			  volta loop
-
-	 */
-
+	buildTimeRegister(&tr, time);/
 	numUpdate = 0;
 	buildMsgCounter(&mc);
 	waiting = 0; // nao esta esperando
@@ -338,7 +275,7 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 		if (isTime(CONFORT, time, &tr)) {
 			if (send_message(CONFORT, socketfd, myself, app, url,
 							 time) == -1) {
-				printf("ERROR: Couldn't send security message to server\n");
+				printf("ERROR: Couldn't send photoshopped image to server\n");
 				return 0;
 			} else {
 				mc.sent_confort += 1;
@@ -348,7 +285,7 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 		if (isTime(ENTERTAINMENT, time, &tr)) {
 			if (send_message(ENTERTAINMENT, socketfd, myself, app, url,
 							 time) == -1) {
-				printf("ERROR: Couldn't send security message to server\n");
+				printf("ERROR: Couldn't send my female character to server\n");
 				return 0;
 			} else {
 				mc.sent_entertainment += 1;
