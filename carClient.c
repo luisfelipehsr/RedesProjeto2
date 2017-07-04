@@ -26,15 +26,13 @@ void printUpdate(int numUpdate, car myself, time_t delay, msg_counter mc) {
 
 int send_message(int mode, int socketfd, car myself, int app, int url,
 				 time_t time) {
-	message msg, b;
+	message msg;
 	security secr;
 	confort conf;
 	entertain ent;
 	char buf[MAX_LINE];
-	char *p;
 
 	sprintf(msg.SENDTIME, "%ld", time);
-	printf("VALOR GUARDADO: %ld\n", strtol(msg.SENDTIME, &p, 10));
 	
 	if (mode == SECURITY) {
 		msg.TYPE = SECURITY;
@@ -79,66 +77,81 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
-		//memcpy(buf, &msg, sizeof(msg));
+	    
 	}
 
-	memcpy(&b, buf, sizeof(b));
+	/*	memcpy(&b, buf, sizeof(b));
 	printf("TEMPO BUFFER: %s\n", msg.SENDTIME);
 	printf("TEMPO: %ld\n", time);
-	
+	*/
 	//return send(socketfd, buf, MAX_LINE, 0);
 	return send(socketfd, &msg, MAX_LINE, 0);
 }
 
 
-/* Recebe um comando do usuario e envia para o servidor.
- * Retorna: -1 se houve um erro, 0 se foi um comando de exit ou
- *          1 se foi uma mensagem. */
-int user_command (int socketfd, char *buffer, unsigned long buffer_size) {
-	int res;
-
-	/* limpa buffer e recebe linha */
-	bzero(buffer, buffer_size);
-	fgets(buffer, buffer_size, stdin);
-
-	/* caso seja um comando de saida */
-	if (strcmp(buffer,"exit\n") == COMMAND_EXIT) {
-		res = send(socketfd, buffer, buffer_size - 1, 0);
-		if (res == -1) {
-			printf("ERROR: Couldn't send exit command to server\n");
-			return -1;
-		} else {
-			return COMMAND_EXIT;
-		}
-	}
-
-	/* envia mensagem ao servidor */
-  res = send(socketfd, buffer, buffer_size - 1, 0);
-	if (res == -1) {
-		printf("ERROR: Couldn't send message to server\n");
-		return -1;
-	}
-
-	return COMMAND_MSG;
-}
-
-/* Recebe uma resposta do servidor e a imprime.
- * Retorna: -1 caso haja um erro ou 1 caso seja sucedido */
-void recv_message (int socketfd, unsigned long buffer_size) {
+/* Recebe uma resposta do servidor. */
+void recv_message (int socketfd, unsigned long buffer_size, car *myself,
+				   int reckless, int *waiting, long *maxDelay, int *old_v,
+				   long *restart_time, time_t time, msg_counter *mc) {
 	int res;
 	char buffer[MAX_LINE];
-
+	char *p;
+	long send_time;
 	message msg;
 	confort conf;
+	entertain ent;
+	security sec;
 		
 	bzero(buffer, buffer_size); // limpa buffer
 	/* recebe mensagem */
-	res = recv(socketfd, buffer, buffer_size - 1, 0);
-    if (res == 256) {
+	res = recv(socketfd, buffer, buffer_size, 0);
+	
+    if (res == 255) {
 		memcpy(&msg, buffer, sizeof(msg));
+		/* mensagem de conforto */
 		if (msg.TYPE == CONFORT) {
 			memcpy(&conf, &msg.data, sizeof(conf));
-			printf("%ld %s", msg.SENDTIME, conf.url);
+			send_time = strtol(msg.SENDTIME, &p, 10);
+			if (time - send_time > *maxDelay)
+				*maxDelay = time - send_time;
+			mc->rcvd_confort += 1;
+			
+			/* mensagem de entretenimento */
+		} else if (msg.TYPE == ENTERTAINMENT) {
+			memcpy(&ent, &msg.data, sizeof(ent));
+			send_time = strtol(msg.SENDTIME, &p, 10);
+			if (time - send_time > *maxDelay)
+				*maxDelay = time - send_time;
+			mc->rcvd_entertainment += 1;
+
+			/* mensagem de seguranca */
+		} else if (msg.TYPE == SECURITY) {
+			memcpy(&sec, &msg.data, sizeof(sec));
+			send_time = strtol(msg.SENDTIME, &p, 10);
+			if (msg.MODIFIER == BREAK) {
+				mc->rcvd_break += 1;
+
+				if (!(*waiting) && !reckless) { // caso de freio 
+					*restart_time = send_time + INTERVAL_WAIT;
+					*waiting = 1;					
+					*old_v = myself->vel;
+					myself->vel = 0;
+					
+				}
+			}
+
+			if (msg.MODIFIER == ACCELERATE) { // caso de acelerar
+				myself->vel += 3;
+				mc->rcvd_accelerate += 1;
+			}
+
+			if (msg.MODIFIER == CALL_RESCUE) { // chamar ambulancia
+				myself->vel = 0;
+			    mc->rcvd_call_help += 1;
+				printf("\n\n--------------------------");
+				printf("\nVOU BOTAR NO YOUTUBE!!!!!!!\n\n");
+				printf("--------------------------\n\n");
+			}
 		}
 	}
 
@@ -169,13 +182,12 @@ int main (int argc, char* argv[]) {
 	msg_counter mc;
 	car myself;
 	char client_ip[INET_ADDRSTRLEN];
-	int carNumber, socketfd, res, waiting;
-	int callingHelp, numUpdate;
+	int carNumber, socketfd, res, waiting, numUpdate, old_v;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time, rcv_time, maxDelay;
+	time_t time, restart_time, maxDelay;
 	int app, url, reckless;
 
 	/* verificação de argumentos */
@@ -305,52 +317,13 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 
 	 */
 
-
-	//=====================================================================
-	//LUIS, NAO QUER CRIAR UMA THREAD QUE FICA ESPERANDO AS RESPOSTAS? AI, NAO POE TIMEOUT
-	//=====================================================================
-	rcv_time = 0;
 	numUpdate = 0;
 	buildMsgCounter(&mc);
 	waiting = 0; // nao esta esperando
-	callingHelp = 0; // nao esta chamando ajuda
 	maxDelay = 0;
-	rcv_time = 0; // DEVE SER SETADO QUANDO TIVER RECEBIDO MSG!!!!!!!!!
+	restart_time = 0; // DEVE SER SETADO QUANDO TIVER RECEBIDO MSG!!!!!!!!!
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
-
-		if (isTime(UPDATE, time, &tr)) {
-			//==================================
-			//========== NOT WAITING? ==========
-			//==================================
-			if (callingHelp)
-				printf("Vou botar no youtube!!!!!!\n");
-			
-			if (!waiting || reckless){
-				srand((int) time);
-				myself.vel += (rand() % 3);
-				if (myself.vel > 20)
-					myself.vel = 20;
-			}
-			/* Atualiza posicao do carro */
-			if (myself.dir == 0)
-				myself.x += (myself.vel)*(myself.sent);
-
-			else if(myself.dir == 1)
-				myself.y += (myself.vel)*(myself.sent);
-			/*
-			msg.TYPE = SECURITY;
-			msg.MODIFIER = CAR_REPORT;
-			memcpy(&msg.data, &myself, sizeof(car));
-			memcpy(&buf, &msg, sizeof(message));
-
-			send(socketfd, &buf, MAX_LINE, 0);
-			*/
-			
-		    printUpdate(numUpdate, myself, maxDelay, mc);
-			numUpdate += 1;
-			
-		}
 
 		if (isTime(SECURITY, time, &tr)) {
 			if (send_message(SECURITY, socketfd, myself, app, url,
@@ -382,9 +355,35 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			}
 	    }
 
-		recv_message(socketfd, MAX_LINE);
+		/* Recebe mensagem com timeout de 2ms */
+		recv_message(socketfd, MAX_LINE, &myself, reckless, &waiting,
+					 &maxDelay, &old_v, &restart_time, time, &mc);
 
-    
+		if (waiting && time > restart_time) {
+			waiting = 0;
+			myself.vel = old_v;
+		}
+			
+		
+		if (isTime(UPDATE, time, &tr)) {
+			
+			if (!waiting || reckless){
+				srand((int) time);
+				myself.vel += (rand() % 3);
+				if (myself.vel > VEL_LIMIT)
+					myself.vel = VEL_LIMIT;
+			}
+			/* Atualiza posicao do carro */
+			if (myself.dir == 0)
+				myself.x += (myself.vel)*(myself.sent);
+
+			else if(myself.dir == 1)
+				myself.y += (myself.vel)*(myself.sent);
+
+			/* Imprime mensagem com updates */
+		    printUpdate(numUpdate, myself, maxDelay, mc);
+			numUpdate += 1;	
+		}
 	}
 
 	/* fecha descritor */
