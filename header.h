@@ -75,7 +75,7 @@ typedef struct security {
 
 /* Estrutura padrao de qualquer tipo de mensagem */
 typedef struct message {
-	time_t SENDTIME;
+	char SENDTIME[16];
 	char TYPE;
 	char MODIFIER;
 	char data[MAX_LINE - 10];

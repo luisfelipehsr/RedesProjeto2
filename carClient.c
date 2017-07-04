@@ -31,9 +31,10 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 	confort conf;
 	entertain ent;
 	char buf[MAX_LINE];
+	char *p;
 
-
-	msg.SENDTIME = time;
+	sprintf(msg.SENDTIME, "%ld", time);
+	printf("VALOR GUARDADO: %ld\n", strtol(msg.SENDTIME, &p, 10));
 	
 	if (mode == SECURITY) {
 		msg.TYPE = SECURITY;
@@ -82,8 +83,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 	}
 
 	memcpy(&b, buf, sizeof(b));
-	msg.SENDTIME = '0';
-	printf("TEMPO BUFFER: %ld\n", msg.SENDTIME);
+	printf("TEMPO BUFFER: %s\n", msg.SENDTIME);
 	printf("TEMPO: %ld\n", time);
 	
 	//return send(socketfd, buf, MAX_LINE, 0);
