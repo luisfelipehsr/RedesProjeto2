@@ -32,6 +32,10 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 	entertain ent;
 	char buf[MAX_LINE];
 	long i;
+	char a;
+
+	a = SECURITY;
+	printf("aaaaaa: %d\n", a);
 
 	msg.SENDTIME = time;
 	
@@ -74,7 +78,6 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 			strcpy(conf.url, URL_TWITTER);
 			strcpy(conf.text, "dirijo bem #tweetdirigindo");
 		}
-
 		//printf("%s\n", conf.text);
 		
 		/* adiciona mensagem ao buffer */
@@ -82,7 +85,13 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		memcpy(buf, &msg, sizeof(msg));
 	}
 
-	return send(socketfd, &buf, MAX_LINE, 0);
+	for (i = 0; i < 40; i++)
+		printf("%c ", buf[i]);
+	printf("\n");
+
+
+	
+	return send(socketfd, buf, MAX_LINE, 0);
 }
 
 
@@ -119,21 +128,25 @@ int user_command (int socketfd, char *buffer, unsigned long buffer_size) {
 
 /* Recebe uma resposta do servidor e a imprime.
  * Retorna: -1 caso haja um erro ou 1 caso seja sucedido */
-int server_response (int socketfd, char *buffer, unsigned long buffer_size) {
+void recv_message (int socketfd, unsigned long buffer_size) {
 	int res;
+	char buffer[MAX_LINE];
 
+	message msg;
+	confort conf;
+		
 	bzero(buffer, buffer_size); // limpa buffer
-
 	/* recebe mensagem */
 	res = recv(socketfd, buffer, buffer_size - 1, 0);
-	if (res == -1) {
-		printf("ERROR: Couldn't receive response from server\n");
-		return -1;
+    if (res == 256) {
+		memcpy(&msg, buffer, sizeof(msg));
+		if (msg.TYPE == CONFORT) {
+			memcpy(&conf, &msg.data, sizeof(conf));
+			printf("%ld %s", msg.SENDTIME, conf.url);
+		}
 	}
 
-	printf("Received from server: %s\n", buffer);
-
-	return COMMAND_MSG;
+	return;
 }
 
 void buildCar(car *myself, char *argv[], int *app, int *url, int *reckless) {
@@ -375,7 +388,9 @@ ta na hora(tipo intervalo, tempo x, tempo atual):
 			}
 	    }
 
-			
+		recv_message(socketfd, MAX_LINE);
+
+    
 	}
 
 	/* fecha descritor */

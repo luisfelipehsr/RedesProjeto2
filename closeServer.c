@@ -13,22 +13,29 @@
  *          1 se o cliente enviou uma linha de texto.
  */
 int receive_command(int clientfd, char *buffer, size_t buffer_size) {
-	int res;
+	int res, i;
 	struct sockaddr_in client_address;
 	char client_ip[INET_ADDRSTRLEN];
 	unsigned addrlen;
 	unsigned short client_port;
+	message m;
 	
 	bzero(buffer, buffer_size); // limpa o buffer
 
-
 	/* recebe e imprime o comando */
-	res = recv(clientfd, buffer, buffer_size - 1, 0);
+	res = recv(clientfd, buffer, buffer_size, 0);
 	if (res == -1) {
 		printf("ERROR: Couldn't receive from buffer\n");
 		return -1;
 	}
-	//printf("Received: %s", buffer);
+
+	memcpy(&m, &buffer, buffer_size);
+
+	for(i = 0; i < 40; i++) {
+		printf("%c ", buffer[i]);
+	}
+	
+    printf("\nReceived: %d %d", m.MODIFIER, m.TYPE);
 
 	/* Imprime IP do cliente que enviou a mensagem */
 	addrlen = sizeof(client_address);
@@ -55,7 +62,7 @@ int main() {
 	struct sockaddr_in socket_address, client_address, conf_address;
 	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
 	int listenfd, clientfd, res, hasCommands, pid, total_connections, n_ready;
-	int maximumfd, maximumfd_index, clients[FD_SETSIZE], i;
+	int maximumfd, maximumfd_index, clients[FD_SETSIZE], i, j;
     fd_set read_set, all_fds;
 	unsigned int addrlen;
 	unsigned short client_port;
@@ -172,7 +179,7 @@ int main() {
 					 * Se mensagem, imprime na tela e envia eco.
 					 * Se for um exit, termina a aplicacao */
 					res = receive_command(clientfd, buf, MAX_LINE);
-		
+					
 				    if(send(clientfd, buf, MAX_LINE-1, 0) == -1)
 						printf("ERROR: Couldn't send message to client %d\n",
 							   i);
