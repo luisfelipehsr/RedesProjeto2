@@ -24,11 +24,13 @@ int answer(int sockfd, message msg){
 	confort conf;
 	int n;
 
+  out.SENDTIME = msg.SENDTIME;
+
 	srand((int) get_time());
 	n=rand()%5;
 
 	if (msg.TYPE == CONFORT) {
-		memcpy(&msg.data, &conf, sizeof(confort));
+		memcpy(&conf, &msg.data, sizeof(confort));
 		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -42,7 +44,7 @@ int answer(int sockfd, message msg){
 							conf.text);
 			}
 
-			memcpy(&out, buf, sizeof(message));
+			memcpy(buf, &out, sizeof(message));
 		} else if (strcmp(conf.url, URL_TWITTER) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
@@ -56,39 +58,38 @@ int answer(int sockfd, message msg){
 							conf.text);
 			}
 
-			memcpy(&out, buf, sizeof(message));
+			memcpy(buf, &out, sizeof(message));
 		}
 
 	} else if (msg.TYPE == ENTERTAINMENT) {
-		memcpy(&msg.data, &ent, sizeof(entertain));
+		memcpy(&ent, &msg.data, sizeof(entertain));
 		if (strcmp(ent.appName, APP_TIBIA) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Outro jogador te matou e roubou suas coisas quando voce tentou %s\n",
-							ent.data);
+				snprintf(out.data, sizeof(out.data), "Outro jogador te matou e roubou suas coisas quando voce matou o orc\n");
+
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Voce conseguiu realizar \"%s\" com sucesso! Congratz! GG!\n",
-							ent.data);
+				snprintf(out.data, sizeof(out.data), "Voce conseguiu derrotar o orc com sucesso! Congratz! GG!\n");
 			}
 
-			memcpy(&out, buf, sizeof(message));
+			memcpy(buf, &out, sizeof(message));
 		} else if (strcmp(ent.appName, APP_POKEMON) == 0) {
 			if (n < 3) {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Voce nao conseguiu %s...\n",
-							ent.data);
+				snprintf(out.data, sizeof(out.data), "The wild code fled...\n");
+
 			} else {
 				out.TYPE = msg.TYPE;
 				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Voce conseguiu \"%s\" com sucesso! Voce ganhou %d candies\n",
-							ent.data, n);
+				snprintf(out.data, sizeof(out.data), "You caught the wild code! You won %d code candies\n",
+							n);
 			}
 
-			memcpy(&out, buf, sizeof(message));
+			memcpy(buf, &out, sizeof(message));
 		}
 	}
 
@@ -200,17 +201,14 @@ int main(int argc, char * argv[]){
     //timeout retorna SOCKET_ERROR
     if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
       msgbuf[n_msgs].timestamp = get_time();
-      memcpy(buf, &msgbuf[n_msgs].msg, sizeof(message));
+      memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
       n_msgs++;
     }
 
     t = get_time();
     for (i = 0; i < n_msgs; i++) {
       if (t - msgbuf[i].timestamp >= 2000) {
-        /* RESPONDER MENSAGEM */
         bytessent = answer(s, msgbuf[i].msg);
-        /*ver como definir carro destinatario/rememtente*/
-
         remove_msg(msgbuf, i--, n_msgs--);
       }
     }
