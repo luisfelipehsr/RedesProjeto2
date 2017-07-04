@@ -27,7 +27,7 @@
 #define ACCELERATE '1'
 #define BREAK '2'
 #define CALL_RESCUE '3'
-#define VEL_WAIT_LIMIT 45
+#define VEL_LIMIT 18
 #define MAX_LINE 256
 #define URL_FACEBOOK "www.facebook.com"
 #define URL_TWITTER "www.twitter.com"

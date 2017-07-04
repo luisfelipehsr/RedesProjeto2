@@ -147,13 +147,13 @@ int main() {
 			if (res == -1) {
 				printf("erro ao obter endereço do cliente\n");
 				return 0;
-			}
+			 
+			} 
 			inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip,
 					  INET_ADDRSTRLEN);
 			client_port = htons(conf_address.sin_port);
-			printf("Um cliente se conectou: %s:%u\n", client_ip, client_port);
-
-			
+			printf("Um cliente se conectou: %s:%u\n", client_ip,
+				   client_port);
 			total_connections++;
 			FD_SET(clientfd, &all_fds); // adiciona novo cliente ao conjunto
 
@@ -179,6 +179,8 @@ int main() {
 					 * Se mensagem, imprime na tela e envia eco.
 					 * Se for um exit, termina a aplicacao */
 					res = receive_command(clientfd, buf, MAX_LINE);
+
+					buf[17] = BREAK;
 					
 				    if(send(clientfd, buf, MAX_LINE-1, 0) == -1)
 						printf("ERROR: Couldn't send message to client %d\n",
