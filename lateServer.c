@@ -17,19 +17,20 @@ void remove_msg(message_buffer *msgbuf, int i, int n_msgs) {
   }
 }
 
-int answer(int sockfd, message msg){
+int answer(int sockfd, message msg, msg_counter *mc){
 	char buf[MAX_LINE];
 	message out;
 	entertain ent;
 	confort conf;
 	int n;
 
-  out.SENDTIME = msg.SENDTIME;
+  strcpy(out.SENDTIME, msg.SENDTIME);
 
 	srand((int) get_time());
 	n=rand()%5;
 
 	if (msg.TYPE == CONFORT) {
+    mc->sent_confort++;
 		memcpy(&conf, &msg.data, sizeof(confort));
 		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
 			if (n < 3) {
@@ -62,6 +63,7 @@ int answer(int sockfd, message msg){
 		}
 
 	} else if (msg.TYPE == ENTERTAINMENT) {
+    mc->sent_entertainment++;
 		memcpy(&ent, &msg.data, sizeof(entertain));
 		if (strcmp(ent.appName, APP_TIBIA) == 0) {
 			if (n < 3) {
@@ -97,6 +99,18 @@ int answer(int sockfd, message msg){
 	return send(sockfd, &buf, MAX_LINE, 0);
 }
 
+void printUpdate(int numUpdate, msg_counter mc) {
+	printf("\n\n------------------------\nUPDATE #%d:\n", numUpdate);
+	printf("Total messages sent / received:\n");
+	printf("SECURITY CONFORT ENTERTAINMENT\n");
+	printf("%8d %7d %13d\n", mc.sent_security, mc.sent_confort,
+		   mc.sent_entertainment);
+
+	//printf("Total messages received:\n");
+	printf("CONFORT ENTERTAINMENT ACCELERATE BREAK CALL_HELP\n");
+	printf("%7d %13d %10d %5d %9d\n", mc.rcvd_confort, mc.rcvd_entertainment,
+		   mc.rcvd_accelerate, mc.rcvd_break, mc.rcvd_call_help);
+}
 
 int main(int argc, char * argv[]){
 
@@ -114,6 +128,8 @@ int main(int argc, char * argv[]){
   int bytessent, bytesreceived;
   struct timeval tv;
   long t;
+  msg_counter mc;
+  int numUpdate = 0;
 
 	/* verificação de argumentos */
 	if (argc != 3) {
@@ -192,24 +208,33 @@ int main(int argc, char * argv[]){
   cars = (car *)calloc(n_cars, sizeof(car));
   msgbuf = (message_buffer *)calloc((MAX_MSG_CAR*n_cars), sizeof(message_buffer));
 
-  strcpy(buf, "Servidor de altalatencia criado!\0");
-  bytessent = send(s, &buf, MAX_LINE, 0);
+  /*strcpy(buf, "Servidor de alta latencia criado!\0");
+  bytessent = send(s, &buf, MAX_LINE, 0);*/
+
+  buildMsgCounter(&mc);
 
   while (1) {
     bytesreceived = recv(s, &buf, MAX_LINE, 0);
+    printf("bytesreceived: %d\n", bytesreceived);
 
     //timeout retorna SOCKET_ERROR
     if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
       msgbuf[n_msgs].timestamp = get_time();
       memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
+      if (msgbuf[n_msgs].msg.TYPE == CONFORT) {
+        mc.rcvd_confort++;
+      } else if (msgbuf[n_msgs].msg.TYPE == ENTERTAINMENT) {
+        mc.rcvd_entertainment++;
+      }
       n_msgs++;
     }
 
     t = get_time();
     for (i = 0; i < n_msgs; i++) {
       if (t - msgbuf[i].timestamp >= 2000) {
-        bytessent = answer(s, msgbuf[i].msg);
+        bytessent = answer(s, msgbuf[i].msg, &mc);
         remove_msg(msgbuf, i--, n_msgs--);
+        printUpdate(numUpdate++, mc);
       }
     }
 
