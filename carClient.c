@@ -36,11 +36,12 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 	if (mode == SECURITY) {
 		msg.TYPE = SECURITY;
 		msg.MODIFIER = CAR_REPORT;
-		secr.carInfo = myself;
+		cartochar(&secr.carInfo, &myself);
 
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &secr, sizeof(secr));
 		memcpy(buf, &msg, sizeof(msg));
+		printBuffer(buf, sizeof(buf));
 
 	} else if (mode == ENTERTAINMENT) {
 		msg.TYPE = ENTERTAINMENT;
@@ -95,8 +96,11 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 	bzero(buffer, buffer_size); // limpa buffer
 	/* recebe mensagem */
 	res = recv(socketfd, buffer, buffer_size, 0);
+
 	
-    if (res == 255) {
+    if (res == 256) {
+		//printf("BUFFER:");
+		//printBuffer(buffer, MAX_LINE);
 		memcpy(&msg, buffer, sizeof(msg));
 		/* mensagem de conforto */
 		if (msg.TYPE == CONFORT) {
@@ -253,7 +257,7 @@ int main (int argc, char* argv[]) {
 	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
        valos de tempo para as acoes */
 	time = get_time();
-	buildTimeRegister(&tr, time);/
+	buildTimeRegister(&tr, time);
 	numUpdate = 0;
 	buildMsgCounter(&mc);
 	waiting = 0; // nao esta esperando
