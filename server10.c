@@ -67,8 +67,8 @@ int* checkcolision(car cars[], int n){
   for (size_t i = 0; i < n-1; i++) {
     for (size_t j = i+1; j < n; j++) {
       if(cars[i].dir != cars[j].dir){
-        if (((cars[i].x == 0)&&(cars[i].y*cars[i].sent < 0)&&(cars[j].x*cars[j].sent < 0)) ||
-            ((cars[i].y == 0)&&(cars[i].x*cars[i].sent < 0)&&(cars[j].y*cars[j].sent < 0))) {
+        if (((cars[i].dir == 1)&&(cars[i].y*cars[i].sent < 0)&&(cars[j].x*cars[j].sent < 0)) ||
+            ((cars[i].dir == 0)&&(cars[i].x*cars[i].sent < 0)&&(cars[j].y*cars[j].sent < 0))) {
           tempo_ii = cars[i].x / cars[i].vel;
           tempo_ij = cars[j].x / cars[j].vel;
           tempo_fi = tempo_ii + (cars[i].tam / cars[i].vel);
