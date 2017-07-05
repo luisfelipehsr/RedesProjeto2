@@ -13,11 +13,11 @@ void send_message(char *SENDTIME, char type, char modifier, char *data, int i,
 	security secr;
 	message msg;
 	int src, clientfd;
-	
+
 	if (type == ENTERTAINMENT || type == CONFORT) {
 		/* passa adiante hora de envio da mensagem */
 		strcpy(msg.SENDTIME, SENDTIME);
-		
+
 		/* mensagem vinda de um carro */
 		if (modifier == CARCLIENT && type == CONFORT) {
 			msg.TYPE = CONFORT;
@@ -55,35 +55,35 @@ void send_message(char *SENDTIME, char type, char modifier, char *data, int i,
 			src = atoi(ent.source);
 			clientfd = clients[src];
 		}
-		
-		
 
-		
+
+
+
 	} else {
 		msg.TYPE = type;
 		msg.MODIFIER = modifier;
 		memcpy(&msg.data, data, sizeof(secr));
 		clientfd = clients[i];
-		
+
 	}
 
 	memcpy(buf, &msg, MAX_LINE);
 	if(send(clientfd, buf, MAX_LINE, 0) == -1) {
 		if (msg.MODIFIER == CLOUD)
-			printf("ERROR: Couldn't send message to client %d\n", src);
-		else
 			printf("ERROR: Couldn't send message to client %d\n", i);
+		else
+			printf("ERROR: Couldn't send message to cloud");
 	}
-}						 
+}
 
 
-/* Recebe um comando do cliente. 
+/* Recebe um comando do cliente.
  * Retorna: -1 se um erro ocorreu, 0 se o cliente enviou um comando de exit ou
  *          1 se o cliente enviou uma mensagem. */
 int recv_message(int clientfd, message *msg) {
 	int res;
 	char buffer[MAX_LINE];
-	
+
 	bzero(buffer, MAX_LINE); // limpa o buffer
 
 	/* recebe e imprime o comando */
@@ -108,7 +108,11 @@ void dropClient(int i, int *clients, fd_set *all_fds) {
 	FD_CLR(clientfd, all_fds);
 	close(clientfd);
 	clients[i] = -1;
-	printf("Client %d connection closed\n", i);
+	if (i == 0) {
+		printf("Cloud connection closed\n");
+	} else {
+		printf("Client %d connection closed\n", i);
+	}
 }
 
 /* Recebe uma mensagem e a trata de acordo */
@@ -119,7 +123,7 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 
 	clientfd = clients[i];
 	res = recv_message(clientfd, &msg);
-	
+
 	/* caso de erro ou conexao fechada pelo cliente */
 	if (res == -1 || res == 0) {
 		if (res == -1)
@@ -163,7 +167,7 @@ int main() {
 		printf("ERROR: Couldn't bind server\n");
 		return 0;
 	}
-	
+
 	/* Cria escuta do socket para aceitar conexões */
     listen(listenfd,MAX_PENDING);
 
@@ -177,7 +181,7 @@ int main() {
 	FD_ZERO(&all_fds);
 	FD_SET(listenfd, &all_fds);
 
-	/* Aguarda e aceita ate 1024 conexoes simultaneas */   
+	/* Aguarda e aceita ate 1024 conexoes simultaneas */
 	while (1) {
 
 		/* usa read_set para saber os clientes com dados para leitura */
@@ -208,7 +212,7 @@ int main() {
 				if(clients[i] < 0) {
 					clients[i] = clientfd;
 					res = 1;
-				}	
+				}
 			}
 
 			/* Termina se houve estouro do numero maximo de clientes */
@@ -238,28 +242,28 @@ int main() {
 				   client_port);
 
 			/* Adiciona novo cliente ao conjunto */
-			FD_SET(clientfd, &all_fds); 
+			FD_SET(clientfd, &all_fds);
 
 			/* Incrementa o valor maximo de descritor se preciso */
 			if (clientfd > maximumfd)
 				maximumfd = clientfd;
 			if (i > maximumfd_index)
 				maximumfd_index = i;
-				
+
 			if (--n_ready <= 0)
 				continue;
 		} // fim if FD_ISSET listen
 
 		/* se um cliente existe num dado indice e enviou algum conteudo, recebe
 		 * mensagem e processa de acordo. Envia respostas ou, se houver um erro,
-		 * remove o cliente */			
+		 * remove o cliente */
 		for (i = 0; i <= maximumfd_index; i++) {
 			clientfd = clients[i];
 			if (clientfd >= 0 && FD_ISSET(clientfd, &read_set))
-				processClient(i, clients, &all_fds, cars);	
+				processClient(i, clients, &all_fds, cars);
 		} // fim for FD_ISSET clientfd
 	} // fim while(1)
-	
+
 	/* Fecha descritor do socket de listen e de todos os accept*/
 	printf(" Server disabled\n");
 	for (i = 0; i < FD_SETSIZE; i++) {
@@ -268,6 +272,6 @@ int main() {
 			close(clientfd);
 	}
 	close(listenfd);
-	
+
 	return 0;
 }

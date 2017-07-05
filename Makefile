@@ -53,4 +53,4 @@ clean_saidas:
 
 #executa o mesmo que os dois comandos acima
 clean_all:
-	rm -f arq*.out $(CLIENT) $(SERVERRAPIDO) $(SERVERLENTO)
+	rm -f arq*.out $(CLIENT) $(SERVERRAPIDO) $(SERVERLENTO) carParameters

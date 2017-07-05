@@ -34,14 +34,14 @@ int answer(int sockfd, message msg, msg_counter *mc){
 		mc->sent_confort++;
 		memcpy(&conf, &msg.data, sizeof(confort));
 		out.TYPE = msg.TYPE;
-		out.MODIFIER = msg.MODIFIER;
-		
+		out.MODIFIER = CLOUD;
+
 		// copia para confCopy url e source
 		strcpy(confCopy.url, conf.url);
-	    strcpy(confCopy.source, conf.source);
-		
+	  strcpy(confCopy.source, conf.source);
+
 		// adiciona em confCopy outros dados
-		if (strcmp(conf.url, URL_FACEBOOK) == 0) {			
+		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
 			if (n < 3) {
 				snprintf(confCopy.text, sizeof(confCopy.text),
 						 "A pessoa que voce NAO quer pegar curtiu seu status: %s",
@@ -72,12 +72,12 @@ int answer(int sockfd, message msg, msg_counter *mc){
 		mc->sent_entertainment++;
 		memcpy(&ent, &msg.data, sizeof(entertain));
 		out.TYPE = msg.TYPE;
-		out.MODIFIER = msg.MODIFIER;
+		out.MODIFIER = CLOUD;
 
 		// copia para entCopy nome do app e source
 		strcpy(entCopy.appName, ent.appName);
 		strcpy(entCopy.source, ent.source);
-		
+
 		// adiciona em entCopy outros dados
 		if (strcmp(ent.appName, APP_TIBIA) == 0) {
 			if (n < 3) {
@@ -102,7 +102,7 @@ int answer(int sockfd, message msg, msg_counter *mc){
 		/* adiciona ao buffer a mensagem de saida */
 		memcpy(&out.data, &entCopy, sizeof(entertain));
 		memcpy(buf, &out, sizeof(message));
-		
+
 	} // fim if TYPE
 
 	/* envia mensagem e retorna saida */
