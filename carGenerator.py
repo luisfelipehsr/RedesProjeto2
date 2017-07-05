@@ -2,7 +2,7 @@ import random
 
 def main():
     fparameters = open("carParameters", "w")
-    cars = 50
+    cars = 4
     for i in range(cars):
         if i < cars/2:
             x = random.randrange(-150, 151, 20)
@@ -20,7 +20,7 @@ def main():
         size = random.randrange(3, 6, 1)
         reckless = random.randrange(0, 2, 1)
 
-        car = "{:3}{:3}{:3}{:3}{:3}{:3}{:3}{:3}{:3}\n".format(
+        car = "{:4}{:4}{:4}{:4}{:4}{:4}{:4}{:4}{:4}\n".format(
             x, y, vel, direction, sentido, size, app, url, reckless)
         fparameters.write(car)
     fparameters.close()

@@ -118,8 +118,10 @@ void dropClient(int i, int *clients, fd_set *all_fds) {
 /* Recebe uma mensagem e a trata de acordo */
 void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 	char buf[MAX_LINE];
-	int clientfd, res;
+	char_car ccar;
+	int clientfd, k, res, tempo_io, tempo_ij, tempo_fo, tempo_fj;
 	message msg;
+	size_t j;
 
 	clientfd = clients[i];
 	res = recv_message(clientfd, &msg);
@@ -132,7 +134,89 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 		return;
 	}
 
-	send_message(msg.SENDTIME, msg.TYPE, msg.MODIFIER, msg.data, i, clients);
+	if (msg.TYPE == CONFORT || msg.TYPE == ENTERTAINMENT) {
+		send_message(msg.SENDTIME, msg.TYPE, msg.MODIFIER,
+					 msg.data, i, clients);
+	} else {
+		/* guarda informacoes do carro */
+		memcpy(&ccar, &msg.data, sizeof(char_car));
+		chartocar(&cars[i], &ccar);
+
+		/* somente calcula colisoes com este carro se ele estiver em sen-
+		 * tido do cruzamento */
+	    if (((cars[i].dir == 1) && (cars[i].y*cars[i].sent > 0)) ||
+			((cars[i].dir == 0) && (cars[i].x*cars[i].sent > 0))) {
+			return;
+		}
+
+		/* checa por colisoes, se houver, envia os sinais */
+		for (j = 1; j < FD_SETSIZE; j++) {
+			if(clients[j] > 0 && cars[i].dir != cars[j].dir && i != j &&
+			   cars[i].vel > 0 && cars[j].vel > 0 && clients[i] > 0){
+				if (((cars[i].dir == 1)&&(cars[j].x*cars[j].sent < 0)) ||
+					((cars[i].dir == 0)&&(cars[j].y*cars[j].sent < 0))) {
+				    
+					
+
+					
+					if (cars[i].dir == 0) {
+						tempo_io = abs(cars[i].x / cars[i].vel);
+						tempo_fo = abs(tempo_io + (cars[i].tam / cars[i].vel));
+						tempo_ij = abs(cars[j].y / cars[j].vel);
+						tempo_fj = abs(tempo_ij + (cars[j].tam / cars[j].vel));
+
+						printf("i: %d %d, j: %d %d\n", cars[i].x, cars[i].vel, cars[j].y, cars[j].vel);
+
+					} else {
+						tempo_io = abs(cars[i].y / cars[i].vel);
+						tempo_ij = abs(cars[j].x / cars[j].vel);
+						tempo_fo = abs(tempo_io + (cars[i].tam / cars[i].vel));
+						tempo_fj = abs(tempo_ij + (cars[j].tam / cars[j].vel));
+
+						printf("i: %d %d, j: %d %d\n", cars[i].y, cars[i].vel, cars[j].x, cars[j].vel);
+					}
+
+					printf("tempos i: %d %d tempos j: %d %d\n", tempo_io, tempo_fo, tempo_ij, tempo_fj);
+					
+					if ((tempo_io - tempo_ij < ) ||
+						(tempo_ij - tempo_io < ) {
+						/* chamar ambulancia */
+						for(k = 1; k < FD_SETSIZE; k++) {
+							if (clients[k] > 0)
+								send_message(msg.SENDTIME, msg.TYPE, BREAK,
+											 msg.data, k, clients);
+							if (i != k && j != k && clients[k] > 0)
+								send_message(msg.SENDTIME, msg.TYPE,
+											 CALL_RESCUE, msg.data, k,
+											 clients);
+						}
+
+						/* elimina os carros que bateram */
+						dropClient(i, clients, all_fds);
+						dropClient(j, clients, all_fds);
+						
+					if ((tempo_ij >= tempo_io) &&
+							   (tempo_ij <= tempo_fo)) {
+						/* i acelera, j freia */
+						send_message(msg.SENDTIME, msg.TYPE, ACCELERATE,
+									 msg.data, i, clients);
+						send_message(msg.SENDTIME, msg.TYPE, BREAK,
+									 msg.data, j, clients);
+						
+					} else if ((tempo_io >= tempo_ij) &&
+							   (tempo_io <= tempo_fj)) {
+						/* i freia, j acelera */
+				    	send_message(msg.SENDTIME, msg.TYPE, BREAK,
+									 msg.data, i, clients);
+						send_message(msg.SENDTIME, msg.TYPE, ACCELERATE,
+									 msg.data, j, clients);
+						/* i freia, j acelera */
+					} // fim if havera colisao		
+				} // fim if colisao
+			} // fim if direcoes ortogonais
+		} // fim if carro indo ao cruzamento
+	} // fim for comparacao com demais carros
+
 }
 
 /* Funcao principal. Ignora argumentos */
