@@ -14,6 +14,7 @@ void remove_msg(message_buffer *msgbuf, int i, int n_msgs) {
     msgbuf[j].msg.TYPE = msgbuf[j+1].msg.TYPE;
     msgbuf[j].msg.MODIFIER = msgbuf[j+1].msg.MODIFIER;
     strcpy(msgbuf[j].msg.data, msgbuf[j+1].msg.data);
+	strcpy(msgbuf[j].msg.SENDTIME, msgbuf[j+1].msg.SENDTIME);
   }
 }
 
@@ -35,10 +36,10 @@ int answer(int sockfd, message msg, msg_counter *mc){
 		memcpy(&conf, &msg.data, sizeof(confort));
 		out.TYPE = msg.TYPE;
 		out.MODIFIER = CLOUD;
-
+		
 		// copia para confCopy url e source
 		strcpy(confCopy.url, conf.url);
-	  strcpy(confCopy.source, conf.source);
+		strcpy(confCopy.source, conf.source);
 
 		// adiciona em confCopy outros dados
 		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
@@ -104,7 +105,7 @@ int answer(int sockfd, message msg, msg_counter *mc){
 		memcpy(buf, &out, sizeof(message));
 
 	} // fim if TYPE
-
+	
 	/* envia mensagem e retorna saida */
 	return send(sockfd, &buf, MAX_LINE, 0);
 }
@@ -212,7 +213,7 @@ int main(int argc, char * argv[]){
 	t = get_time();
 	buildTimeRegister(&tr, t);
 
-	while (1) {
+	while (!isTime(STOP_SERVER, t, &tr)) {
 		bytesreceived = recv(s, &buf, MAX_LINE, 0);
 		//printf("bytesreceived: %d\n", bytesreceived);
 
@@ -220,15 +221,15 @@ int main(int argc, char * argv[]){
 		if ((bytesreceived > 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
 			msgbuf[n_msgs].timestamp = get_time();
 			memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
-			if (msgbuf[n_msgs].msg.TYPE == CONFORT) {
+			if (msgbuf[n_msgs].msg.TYPE == CONFORT) {	
 				mc.rcvd_confort++;
 			} else if (msgbuf[n_msgs].msg.TYPE == ENTERTAINMENT) {
 				mc.rcvd_entertainment++;
 			}
 			n_msgs++;
 		} else if (bytesreceived == 0) {
-      break;
-    }
+			break;
+		}
 
 		t = get_time();
 		for (i = 0; i < n_msgs; i++) {

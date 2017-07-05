@@ -110,6 +110,7 @@ void dropClient(int i, int *clients, fd_set *all_fds) {
 	clients[i] = -1;
 	if (i == 0) {
 		printf("Cloud connection closed\n");
+		exit(1);
 	} else {
 		printf("Client %d connection closed\n", i);
 	}
@@ -137,6 +138,7 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 	if (msg.TYPE == CONFORT || msg.TYPE == ENTERTAINMENT) {
 		send_message(msg.SENDTIME, msg.TYPE, msg.MODIFIER,
 					 msg.data, i, clients);
+		
 	} else {
 		/* guarda informacoes do carro */
 		memcpy(&ccar, &msg.data, sizeof(char_car));
@@ -163,23 +165,18 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 						tempo_io = abs(cars[i].x / cars[i].vel);
 						tempo_fo = abs(tempo_io + (cars[i].tam / cars[i].vel));
 						tempo_ij = abs(cars[j].y / cars[j].vel);
-						tempo_fj = abs(tempo_ij + (cars[j].tam / cars[j].vel));
-
-						printf("i: %d %d, j: %d %d\n", cars[i].x, cars[i].vel, cars[j].y, cars[j].vel);
-
+						tempo_fj = abs(tempo_ij + (cars[j].tam / cars[j].vel));			   
 					} else {
 						tempo_io = abs(cars[i].y / cars[i].vel);
 						tempo_ij = abs(cars[j].x / cars[j].vel);
 						tempo_fo = abs(tempo_io + (cars[i].tam / cars[i].vel));
 						tempo_fj = abs(tempo_ij + (cars[j].tam / cars[j].vel));
-
-						printf("i: %d %d, j: %d %d\n", cars[i].y, cars[i].vel, cars[j].x, cars[j].vel);
 					}
-
-					printf("tempos i: %d %d tempos j: %d %d\n", tempo_io, tempo_fo, tempo_ij, tempo_fj);
-					
-					if ((tempo_io - tempo_ij < ) ||
-						(tempo_ij - tempo_io < ) {
+	
+					if ((((tempo_ij >= tempo_io) && (tempo_ij <= tempo_fo)) &&
+						 tempo_ij < INEVITABLE_COLISION) ||
+						(((tempo_io >= tempo_ij) && (tempo_io <= tempo_fj)) &&
+						 tempo_io < INEVITABLE_COLISION)) {
 						/* chamar ambulancia */
 						for(k = 1; k < FD_SETSIZE; k++) {
 							if (clients[k] > 0)
@@ -192,12 +189,15 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 						}
 
 						/* elimina os carros que bateram */
+						printf("AJUDA! Carros %d e %ld bateram!\n", i, j);
 						dropClient(i, clients, all_fds);
 						dropClient(j, clients, all_fds);
+					}
 						
-					if ((tempo_ij >= tempo_io) &&
-							   (tempo_ij <= tempo_fo)) {
+					if ((tempo_ij >= tempo_io) && (tempo_ij <= tempo_fo)) {
 						/* i acelera, j freia */
+						printf("Alerta: Carros %d e %ld vao bater. %ld freou\n",
+							   i, j , j);
 						send_message(msg.SENDTIME, msg.TYPE, ACCELERATE,
 									 msg.data, i, clients);
 						send_message(msg.SENDTIME, msg.TYPE, BREAK,
@@ -206,6 +206,8 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 					} else if ((tempo_io >= tempo_ij) &&
 							   (tempo_io <= tempo_fj)) {
 						/* i freia, j acelera */
+						printf("Alerta: Carros %d e %ld vao bater. %d freou\n",
+							   i, j , i);
 				    	send_message(msg.SENDTIME, msg.TYPE, BREAK,
 									 msg.data, i, clients);
 						send_message(msg.SENDTIME, msg.TYPE, ACCELERATE,
@@ -230,6 +232,8 @@ int main() {
 	unsigned int addrlen;
 	unsigned short client_port;
 	car cars[FD_SETSIZE];
+	time_register tr;
+	time_t time;
 
 	/* criação da estrutura de dados de endereço */
 	bzero((char *)&socket_address, sizeof(socket_address));
@@ -265,9 +269,10 @@ int main() {
 	FD_ZERO(&all_fds);
 	FD_SET(listenfd, &all_fds);
 
+	time = get_time();
+	buildTimeRegister(&tr, time);
 	/* Aguarda e aceita ate 1024 conexoes simultaneas */
 	while (1) {
-
 		/* usa read_set para saber os clientes com dados para leitura */
 		read_set = all_fds;
 		n_ready = select(maximumfd+1, &read_set, NULL,NULL,NULL);
