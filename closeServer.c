@@ -5,7 +5,8 @@
 #define MAX_LINE 256
 #define MAX_PENDING 5
 
-void send_message(char type, char modifier, char *data, int i, int *clients) {
+void send_message(char *SENDTIME, char type, char modifier, char *data, int i,
+				  int *clients) {
 	char buf[MAX_LINE];
 	confort conf;
 	entertain ent;
@@ -14,7 +15,10 @@ void send_message(char type, char modifier, char *data, int i, int *clients) {
 	int src, clientfd;
 	
 	if (type == ENTERTAINMENT || type == CONFORT) {
-		// mensagem vinda de um carro
+		/* passa adiante hora de envio da mensagem */
+		strcpy(msg.SENDTIME, SENDTIME);
+		
+		/* mensagem vinda de um carro */
 		if (modifier == CARCLIENT && type == CONFORT) {
 			msg.TYPE = CONFORT;
 			memcpy(&conf, data, sizeof(conf));
@@ -29,7 +33,7 @@ void send_message(char type, char modifier, char *data, int i, int *clients) {
 			memcpy(&msg.data, &ent, sizeof(ent));
 			clientfd = clients[0]; // envia para a nuvem
 		}
-		// mensagem vinda do servico na nuvem
+		/* mensagem vinda do servico na nuvem */
 		if (modifier == CLOUD && type == CONFORT) {
 			/* Copia conteudo da mensagem */
 			msg.TYPE = CONFORT;
@@ -64,8 +68,12 @@ void send_message(char type, char modifier, char *data, int i, int *clients) {
 	}
 
 	memcpy(buf, &msg, MAX_LINE);
-	if(send(clientfd, buf, MAX_LINE, 0) == -1)
-		printf("ERROR: Couldn't send message to client %d\n", i);
+	if(send(clientfd, buf, MAX_LINE, 0) == -1) {
+		if (msg.MODIFIER == CLOUD)
+			printf("ERROR: Couldn't send message to client %d\n", src);
+		else
+			printf("ERROR: Couldn't send message to client %d\n", i);
+	}
 }						 
 
 
@@ -120,14 +128,7 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 		return;
 	}
 
-	msg.MODIFIER = BREAK;
-	send_message(msg.TYPE, msg.MODIFIER, msg.data, i, clients);
-	
-	/*
-	memcpy(buf, &msg, MAX_LINE);
-	if(send(clientfd, buf, MAX_LINE, 0) == -1)
-		printf("ERROR:Couldn't send message to client %d\n", i);
-	*/
+	send_message(msg.SENDTIME, msg.TYPE, msg.MODIFIER, msg.data, i, clients);
 }
 
 /* Funcao principal. Ignora argumentos */

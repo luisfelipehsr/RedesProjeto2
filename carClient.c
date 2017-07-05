@@ -41,11 +41,10 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &secr, sizeof(secr));
 		memcpy(buf, &msg, sizeof(msg));
-		printBuffer(buf, sizeof(buf));
 
 	} else if (mode == ENTERTAINMENT) {
 		msg.TYPE = ENTERTAINMENT;
-		msg.MODIFIER = CLOUD;
+		msg.MODIFIER = CARCLIENT;
 		if (url == 0) {
 			strcpy(ent.appName, APP_TIBIA);
 			strcpy(ent.data, "Atacou um orc");
@@ -61,7 +60,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
-		msg.MODIFIER = CLOUD;
+		msg.MODIFIER = CARCLIENT;
 		if (url == 0) {
 			strcpy(conf.url, URL_FACEBOOK);
 			strcpy(conf.text, "Olha essa foto minha dirigindo");
@@ -97,17 +96,18 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 	/* recebe mensagem */
 	res = recv(socketfd, buffer, buffer_size, 0);
 
-	
+	/* caso haja uma mensagem completa no buffer */
     if (res == 256) {
-		//printf("BUFFER:");
-		//printBuffer(buffer, MAX_LINE);
 		memcpy(&msg, buffer, sizeof(msg));
 		/* mensagem de conforto */
 		if (msg.TYPE == CONFORT) {
 			memcpy(&conf, &msg.data, sizeof(conf));
 			send_time = strtol(msg.SENDTIME, &p, 10);
-			if (time - send_time > *maxDelay)
+			printf("TEMPO ATUAL: %ld, SEND_TIME: %ld, DELAY ATUAL: %ld\n", time, send_time, *maxDelay);
+			if (time - send_time > *maxDelay) {
+				
 				*maxDelay = time - send_time;
+			}
 			mc->rcvd_confort += 1;
 			
 			/* mensagem de entretenimento */

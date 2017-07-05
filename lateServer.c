@@ -20,82 +20,92 @@ void remove_msg(message_buffer *msgbuf, int i, int n_msgs) {
 int answer(int sockfd, message msg, msg_counter *mc){
 	char buf[MAX_LINE];
 	message out;
-	entertain ent;
-	confort conf;
+	entertain ent, entCopy;
+	confort conf, confCopy;
 	int n;
 
-  strcpy(out.SENDTIME, msg.SENDTIME);
+	strcpy(out.SENDTIME, msg.SENDTIME);
 
 	srand((int) get_time());
 	n=rand()%5;
 
+	/* Modifica mensagem de saida conforme seu tipo e conteudo */
 	if (msg.TYPE == CONFORT) {
-    mc->sent_confort++;
+		mc->sent_confort++;
 		memcpy(&conf, &msg.data, sizeof(confort));
-		if (strcmp(conf.url, URL_FACEBOOK) == 0) {
+		out.TYPE = msg.TYPE;
+		out.MODIFIER = msg.MODIFIER;
+		
+		// copia para confCopy url e source
+		strcpy(confCopy.url, conf.url);
+	    strcpy(confCopy.source, conf.source);
+		
+		// adiciona em confCopy outros dados
+		if (strcmp(conf.url, URL_FACEBOOK) == 0) {			
 			if (n < 3) {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "A pessoa que voce NAO quer pegar curtiu seu status: %s",
-							conf.text);
-			} else {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "A pessoa que voce QUER pegar curtiu seu status: %s",
-							conf.text);
-			}
+				snprintf(confCopy.text, sizeof(confCopy.text),
+						 "A pessoa que voce NAO quer pegar curtiu seu status: %s",
+						 conf.text);
 
-			memcpy(buf, &out, sizeof(message));
+			} else {
+				snprintf(confCopy.text, sizeof(confCopy.text),
+						 "A pessoa que voce QUER pegar curtiu seu status: %s",
+						 conf.text);
+			}
 		} else if (strcmp(conf.url, URL_TWITTER) == 0) {
 			if (n < 3) {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "A pessoa que voce NAO quer pegar retweetou: %s",
-							conf.text);
+				snprintf(confCopy.text, sizeof(confCopy.text),
+						 "A pessoa que voce NAO quer pegar retweetou: %s",
+						 conf.text);
 			} else {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "A pessoa que voce QUER pegar retweetou: %s",
-							conf.text);
+				snprintf(confCopy.text, sizeof(confCopy.text),
+						 "A pessoa que voce QUER pegar retweetou: %s",
+						 conf.text);
 			}
+		} // fim if URLs
 
-			memcpy(buf, &out, sizeof(message));
-		}
+		/* adiciona ao buffer a mensagem de saida */
+		memcpy(&out.data, &confCopy, sizeof(confort));
+		memcpy(buf, &out, sizeof(message));
 
 	} else if (msg.TYPE == ENTERTAINMENT) {
-    mc->sent_entertainment++;
+		mc->sent_entertainment++;
 		memcpy(&ent, &msg.data, sizeof(entertain));
+		out.TYPE = msg.TYPE;
+		out.MODIFIER = msg.MODIFIER;
+
+		// copia para entCopy nome do app e source
+		strcpy(entCopy.appName, ent.appName);
+		strcpy(entCopy.source, ent.source);
+		
+		// adiciona em entCopy outros dados
 		if (strcmp(ent.appName, APP_TIBIA) == 0) {
 			if (n < 3) {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Outro jogador te matou e roubou suas coisas quando voce matou o orc\n");
+				snprintf(entCopy.data, sizeof(entCopy.data),
+						 "Outro jogador te matou e roubou suas coisas quando voce matou o orc\n");
 
 			} else {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "Voce conseguiu derrotar o orc com sucesso! Congratz! GG!\n");
+				snprintf(entCopy.data, sizeof(entCopy.data),
+						 "Voce conseguiu derrotar o orc com sucesso! Congratz! GG!\n");
 			}
-
-			memcpy(buf, &out, sizeof(message));
 		} else if (strcmp(ent.appName, APP_POKEMON) == 0) {
 			if (n < 3) {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "The wild code fled...\n");
-
+				snprintf(entCopy.data, sizeof(entCopy.data),
+						 "The wild code fled...\n");
 			} else {
-				out.TYPE = msg.TYPE;
-				out.MODIFIER = msg.MODIFIER;
-				snprintf(out.data, sizeof(out.data), "You caught the wild code! You won %d code candies\n",
-							n);
+				snprintf(entCopy.data, sizeof(entCopy.data),
+						 "You caught the wild code! You won %d code candies\n",
+						 n);
 			}
+		} // fim if AppName
 
-			memcpy(buf, &out, sizeof(message));
-		}
-	}
+		/* adiciona ao buffer a mensagem de saida */
+		memcpy(&out.data, &entCopy, sizeof(entertain));
+		memcpy(buf, &out, sizeof(message));
+		
+	} // fim if TYPE
 
-
+	/* envia mensagem e retorna saida */
 	return send(sockfd, &buf, MAX_LINE, 0);
 }
 
@@ -114,132 +124,123 @@ void printUpdate(int numUpdate, msg_counter mc) {
 
 int main(int argc, char * argv[]){
 
-  struct hostent *host_address;
-  struct sockaddr_in socket_address, conf_address;
-  char *host;
-  char buf[MAX_LINE], eco[MAX_LINE + 10], client_ip[INET_ADDRSTRLEN];
-  car *cars;
-  message_buffer *msgbuf;
-  unsigned addrlen;
-  unsigned short client_port;
-  int s, i, res;
-  int n_cars, n_msgs;
-  size_t len;
-  int bytessent, bytesreceived;
-  struct timeval tv;
-  long t;
-  msg_counter mc;
-  int numUpdate = 0;
+	struct hostent *host_address;
+	struct sockaddr_in socket_address, conf_address;
+	char *host;
+	char buf[MAX_LINE], client_ip[INET_ADDRSTRLEN];
+	car *cars;
+	message_buffer *msgbuf;
+	unsigned addrlen;
+	unsigned short client_port;
+	int s, i, res;
+	int n_cars, n_msgs;
+	size_t len;
+	int bytesreceived;
+	struct timeval tv;
+	long t;
+	msg_counter mc;
+	int numUpdate = 0;
+	time_register tr;
 
 	/* verificação de argumentos */
 	if (argc != 3) {
-    fprintf(stderr, "Numero de argumentos invalido\n");
-    fprintf(stderr, "Use:./lateServer [hostname_fastServer] [numero_maximo_de_carros]\n");
-    return -1;
+		fprintf(stderr, "Numero de argumentos invalido\n");
+		fprintf(stderr, "Use:./lateServer [hostname_fastServer] [numero_maximo_de_carros]\n");
+		return -1;
 	}
 
-  host = argv[1];
+	host = argv[1];
 
 	/* tradução de nome para endereço IP */
 	host_address = gethostbyname(host);
 
-  if (host_address == NULL) {
-    fprintf(stderr, "Falha na resolucao do nome de servidor.\n");
-    return -1;
-  }
+	if (host_address == NULL) {
+		fprintf(stderr, "Falha na resolucao do nome de servidor.\n");
+		return -1;
+	}
 
-  printf("Consegui hostbyname\n");
+	printf("Consegui hostbyname\n");
 
-  /* criação da estrutura de dados de endereço */
-  bzero(&buf, MAX_LINE);
+	/* criação da estrutura de dados de endereço */
+	bzero(&buf, MAX_LINE);
+	bzero((char *)&socket_address, sizeof(socket_address));
+	socket_address.sin_family = AF_INET;
+	bcopy(host_address->h_addr, (char *)&socket_address.sin_addr, host_address->h_length);
+	socket_address.sin_port = htons(SERVER_PORT);
+	len = host_address->h_length;
+	bcopy((char *)host_address->h_addr_list[0],
+		  (char *)&socket_address.sin_addr.s_addr, len);
 
-  bzero((char *)&socket_address, sizeof(socket_address));
-  socket_address.sin_family = AF_INET;
-  bcopy(host_address->h_addr, (char *)&socket_address.sin_addr, host_address->h_length);
-  socket_address.sin_port = htons(SERVER_PORT);
-  //len = sizeof(socket_address);
-  len = host_address->h_length;
-  bcopy((char *)host_address->h_addr_list[0],
-		(char *)&socket_address.sin_addr.s_addr, len);
+	/* criação de socket ativo*/
+	s = socket(AF_INET, SOCK_STREAM, 0);
+	if (s == -1) {
+		fprintf(stderr, "Falha na criacao de socket ativo.\n");
+		return -1;
+	}
 
-  /* criação de socket ativo*/
-  s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s == -1) {
-    fprintf(stderr, "Falha na criacao de socket ativo.\n");
-    return -1;
-  }
+	/* estabelecimento da conexão */
+	if (connect(s, (const struct sockaddr*)&socket_address,
+				sizeof(socket_address)) == -1) {
+		fprintf(stderr, "Falha no estabelecimento da conexao.\n");
+		return -1;
+	}
 
-  //printf("Socket Criado\n");
+	/* Imprime informacoes das portas e IPs do cliente */
+	addrlen = sizeof(conf_address);
+	res = getsockname(s, (struct sockaddr *) &conf_address, &addrlen);
+	if (res == -1) {
+		printf("erro ao obter endereço do cliente\n");
+		return 0;
+	}
+	inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip, INET_ADDRSTRLEN);
+	client_port = htons(conf_address.sin_port);
+	printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
+		   client_port);
 
-  /* estabelecimento da conexão */
-  if (connect(s, (const struct sockaddr*)&socket_address,
-			  sizeof(socket_address)) == -1) {
-    fprintf(stderr, "Falha no estabelecimento da conexao.\n");
-    return -1;
-  }
-  /*
-  printf("Conectado\n");
+	/*timeout de 2ms para o recv */
+	tv.tv_sec = 0;
+	tv.tv_usec = 2000; // == 2 ms
+	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval));
 
-  addrlen = sizeof(conf_address);
-  getsockname(s, (struct sockaddr*) &conf_address, &addrlen);
-  printf("\nInformacoes do socket local:\nIP: %s\nPorta: %u\n\n", inet_ntoa((struct in_addr) conf_address.sin_addr),conf_address.sin_port);
-  */
+	n_cars = atoi(argv[2]);
+	n_msgs = 0;
+	cars = (car *)calloc(n_cars, sizeof(car));
+	msgbuf = (message_buffer *)calloc((MAX_MSG_CAR*n_cars), sizeof(message_buffer));
 
-  /* Imprime informacoes das portas e IPs do cliente */
-  addrlen = sizeof(conf_address);
-  res = getsockname(s, (struct sockaddr *) &conf_address, &addrlen);
-  if (res == -1) {
-	  printf("erro ao obter endereço do cliente\n");
-	  return 0;
-  }
-  inet_ntop(AF_INET, &(conf_address.sin_addr), client_ip, INET_ADDRSTRLEN);
-  client_port = htons(conf_address.sin_port);
-  printf("Conectando-se com endereco ip e porta: %s:%u\n", client_ip,
-		 client_port);
+	/* monta estruturas de controle */
+	buildMsgCounter(&mc);
+	t = get_time();
+	buildTimeRegister(&tr, t);
 
-  /*timeout de 2ms para o recv */
-  tv.tv_sec = 0;
-  tv.tv_usec = 2000; // == 2 ms
-  setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(struct timeval));
+	while (1) {
+		bytesreceived = recv(s, &buf, MAX_LINE, 0);
+		//printf("bytesreceived: %d\n", bytesreceived);
 
-  n_cars = atoi(argv[2]);
-  n_msgs = 0;
+		//timeout retorna SOCKET_ERROR
+		if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
+			msgbuf[n_msgs].timestamp = get_time();
+			memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
+			if (msgbuf[n_msgs].msg.TYPE == CONFORT) {
+				mc.rcvd_confort++;
+			} else if (msgbuf[n_msgs].msg.TYPE == ENTERTAINMENT) {
+				mc.rcvd_entertainment++;
+			}
+			n_msgs++;
+		}
 
-  cars = (car *)calloc(n_cars, sizeof(car));
-  msgbuf = (message_buffer *)calloc((MAX_MSG_CAR*n_cars), sizeof(message_buffer));
+		t = get_time();
+		for (i = 0; i < n_msgs; i++) {
+			if (t - msgbuf[i].timestamp >= 2000) {
+				answer(s, msgbuf[i].msg, &mc);
+				remove_msg(msgbuf, i--, n_msgs--);
+			}
+		}
 
-  /*strcpy(buf, "Servidor de alta latencia criado!\0");
-  bytessent = send(s, &buf, MAX_LINE, 0);*/
+		/* Imprime mensagens de update a cada 1s */
+		if(isTime(UPDATE, t, &tr))
+			printUpdate(numUpdate++, mc);
+	}
 
-  buildMsgCounter(&mc);
-
-  while (1) {
-    bytesreceived = recv(s, &buf, MAX_LINE, 0);
-    printf("bytesreceived: %d\n", bytesreceived);
-
-    //timeout retorna SOCKET_ERROR
-    if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
-      msgbuf[n_msgs].timestamp = get_time();
-      memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
-      if (msgbuf[n_msgs].msg.TYPE == CONFORT) {
-        mc.rcvd_confort++;
-      } else if (msgbuf[n_msgs].msg.TYPE == ENTERTAINMENT) {
-        mc.rcvd_entertainment++;
-      }
-      n_msgs++;
-    }
-
-    t = get_time();
-    for (i = 0; i < n_msgs; i++) {
-      if (t - msgbuf[i].timestamp >= 2000) {
-        bytessent = answer(s, msgbuf[i].msg, &mc);
-        remove_msg(msgbuf, i--, n_msgs--);
-        printUpdate(numUpdate++, mc);
-      }
-    }
-
-  }
-
-  close(s);
-  return 0;
+	close(s);
+	return 0;
 }
