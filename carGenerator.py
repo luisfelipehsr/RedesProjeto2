@@ -26,8 +26,10 @@ def main():
         url = random.randrange(0, 2, 1)
         vel = random.randrange(10, 21, 5)
         size = random.randrange(3, 6, 1)
-        #reckless = random.randrange(0, 2, 1)
-        reckless = 0
+        if sys.argv[2] == '1':
+            reckless = random.randrange(0, 2, 1)
+        else:
+            reckless = 0
 
         car = "{:4}{:4}{:4}{:4}{:4}{:4}{:4}{:4}{:4}\n".format(
             x, y, vel, direction, sentido, size, app, url, reckless)
