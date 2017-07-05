@@ -21,7 +21,7 @@ INICIADOR = startCars.py
 ##############################################
 # variaveis a mudar de acordo com a execucao #
 ##############################################
-NUM_CARROS = 5				# numero de carros que estarao presentes na simulacao
+NUM_CARROS = 1				# numero de carros que estarao presentes na simulacao
 HOSTNAME = localhost	#	hostname do servidor principal
 
 #compilacao dos arquivo em c
@@ -53,4 +53,4 @@ clean_saidas:
 
 #executa o mesmo que os dois comandos acima
 clean_all:
-	rm -f arq*.out $(CLIENT) $(SERVERRAPIDO) $(SERVERLENTO) carParameters
+	rm -f arq*.out $(CLIENT) $(SERVERRAPIDO) $(SERVERLENTO)

@@ -3,7 +3,7 @@
 ****************************************/
 #include "header.h"
 
-#define MAX_MSG_CAR 5
+#define MAX_MSG_CAR 20
 #define SERVER_PORT 12345
 #define MAX_LINE 256
 
@@ -217,7 +217,7 @@ int main(int argc, char * argv[]){
 		//printf("bytesreceived: %d\n", bytesreceived);
 
 		//timeout retorna SOCKET_ERROR
-		if ((bytesreceived >= 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
+		if ((bytesreceived > 0) && (n_msgs < MAX_MSG_CAR*n_cars)){
 			msgbuf[n_msgs].timestamp = get_time();
 			memcpy(&msgbuf[n_msgs].msg, buf, sizeof(message));
 			if (msgbuf[n_msgs].msg.TYPE == CONFORT) {
@@ -226,11 +226,13 @@ int main(int argc, char * argv[]){
 				mc.rcvd_entertainment++;
 			}
 			n_msgs++;
-		}
+		} else if (bytesreceived == 0) {
+      break;
+    }
 
 		t = get_time();
 		for (i = 0; i < n_msgs; i++) {
-			if (t - msgbuf[i].timestamp >= 2000) {
+			if (t - msgbuf[i].timestamp >= CLOUD_DELAY) {
 				answer(s, msgbuf[i].msg, &mc);
 				remove_msg(msgbuf, i--, n_msgs--);
 			}

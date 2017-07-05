@@ -32,7 +32,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 	char buf[MAX_LINE];
 
 	sprintf(msg.SENDTIME, "%ld", time);
-	
+
 	if (mode == SECURITY) {
 		msg.TYPE = SECURITY;
 		msg.MODIFIER = CAR_REPORT;
@@ -57,7 +57,7 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &ent, sizeof(ent));
 		memcpy(buf, &msg, sizeof(msg));
-		
+
 	} else if (mode == CONFORT) {
 		msg.TYPE = CONFORT;
 		msg.MODIFIER = CARCLIENT;
@@ -69,10 +69,11 @@ int send_message(int mode, int socketfd, car myself, int app, int url,
 			strcpy(conf.url, URL_TWITTER);
 			strcpy(conf.text, "dirijo bem #tweetdirigindo");
 		}
-		
+
 		/* adiciona mensagem ao buffer */
 		memcpy(&msg.data, &conf, sizeof(conf));
-	    
+		memcpy(buf, &msg, sizeof(msg));
+
 	}
 
 	return send(socketfd, &msg, MAX_LINE, 0);
@@ -91,7 +92,7 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 	confort conf;
 	entertain ent;
 	security sec;
-		
+
 	bzero(buffer, buffer_size); // limpa buffer
 	/* recebe mensagem */
 	res = recv(socketfd, buffer, buffer_size, 0);
@@ -105,11 +106,11 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 			send_time = strtol(msg.SENDTIME, &p, 10);
 			printf("TEMPO ATUAL: %ld, SEND_TIME: %ld, DELAY ATUAL: %ld\n", time, send_time, *maxDelay);
 			if (time - send_time > *maxDelay) {
-				
+
 				*maxDelay = time - send_time;
 			}
 			mc->rcvd_confort += 1;
-			
+
 			/* mensagem de entretenimento */
 		} else if (msg.TYPE == ENTERTAINMENT) {
 			memcpy(&ent, &msg.data, sizeof(ent));
@@ -125,12 +126,12 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 			if (msg.MODIFIER == BREAK) {
 				mc->rcvd_break += 1;
 
-				if (!(*waiting) && !reckless) { // caso de freio 
+				if (!(*waiting) && !reckless) { // caso de freio
 					*restart_time = send_time + INTERVAL_WAIT;
-					*waiting = 1;					
+					*waiting = 1;
 					*old_v = myself->vel;
 					myself->vel = 0;
-					
+
 				}
 			}
 
@@ -304,10 +305,10 @@ int main (int argc, char* argv[]) {
 			waiting = 0;
 			myself.vel = old_v;
 		}
-			
-		
+
+
 		if (isTime(UPDATE, time, &tr)) {
-			
+
 			if (!waiting || reckless){
 				srand((int) time);
 				myself.vel += (rand() % 3);
@@ -323,7 +324,7 @@ int main (int argc, char* argv[]) {
 
 			/* Imprime mensagem com updates */
 		    printUpdate(numUpdate, myself, maxDelay, mc);
-			numUpdate += 1;	
+			numUpdate += 1;
 		}
 	}
 

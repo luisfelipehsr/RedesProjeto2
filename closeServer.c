@@ -68,7 +68,7 @@ void send_message(char *SENDTIME, char type, char modifier, char *data, int i,
 	}
 
 	memcpy(buf, &msg, MAX_LINE);
-	if(send(clientfd, buf, MAX_LINE, 0) == -1) {
+	if((clientfd > -1) && (send(clientfd, buf, MAX_LINE, 0) == -1)) {
 		if (msg.MODIFIER == CLOUD)
 			printf("ERROR: Couldn't send message to client %d\n", i);
 		else
