@@ -122,7 +122,7 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 		} else if (msg.TYPE == SECURITY) {
 			memcpy(&sec, &msg.data, sizeof(sec));
 			send_time = strtol(msg.SENDTIME, &p, 10);
-			if (msg.MODIFIER == BREAK) {
+			if (msg.MODIFIER == BREAK && !(*waiting)) {
 				mc->rcvd_break += 1;
 
 				if (!(*waiting) && !reckless) { // caso de freio
@@ -130,11 +130,10 @@ void recv_message (int socketfd, unsigned long buffer_size, car *myself,
 					*waiting = 1;
 					*old_v = myself->vel;
 					myself->vel = 0;
-
 				}
 			}
 
-			if (msg.MODIFIER == ACCELERATE) { // caso de acelerar
+			if (msg.MODIFIER == ACCELERATE && !(*waiting)) { // caso de acelerar
 				myself->vel += 3;
 				mc->rcvd_accelerate += 1;
 			}
@@ -182,14 +181,15 @@ int main (int argc, char* argv[]) {
 	msg_counter mc;
 	car myself;
 	char client_ip[INET_ADDRSTRLEN];
-	int carNumber, socketfd, res, waiting, numUpdate, old_v;
+	int carNumber, socketfd, res, waiting, numUpdate, old_v, i;
 	unsigned addrlen;
 	unsigned short client_port;
 	size_t len;
 	time_register tr;
-	time_t time, restart_time, maxDelay;
+	time_t time, restart_time, maxDelay, total_delay;
 	int app, url, reckless;
 
+	
 	/* verificação de argumentos */
 	if (argc == 12) {
 		host = argv[1];
@@ -254,14 +254,16 @@ int main (int argc, char* argv[]) {
 			   sizeof(struct timeval));
 
 
-	/* Inicializa o registrador de horarios. Ele eh utilizado para saber inter-
-       valos de tempo para as acoes */
+	/* Inicializa diversas variaveis, como um registrador de tempos de 
+	 * ultima ocorrencia de atividades e contadores */
 	time = get_time();
 	buildTimeRegister(&tr, time);
 	numUpdate = 0;
 	buildMsgCounter(&mc);
+	total_delay = 0;
 	waiting = 0; // nao esta esperando
 	maxDelay = 0;
+	i = 0;
 	restart_time = 0; // DEVE SER SETADO QUANDO TIVER RECEBIDO MSG!!!!!!!!!
 	while (!isTime(STOP_SIMULATION, time, &tr)) {
 		time = get_time();
@@ -323,12 +325,15 @@ int main (int argc, char* argv[]) {
 
 			/* Imprime mensagem com updates */
 		    printUpdate(numUpdate, myself, maxDelay, mc);
+			total_delay += maxDelay;
+			i += 1;
 			maxDelay = 0;
 			numUpdate += 1;
 		}
 	}
 
 	/* fecha descritor */
+    printf("Delay medio final: %ld\n", total_delay / i);
 	close(socketfd);
 
 	return 0;

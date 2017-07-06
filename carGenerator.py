@@ -24,7 +24,7 @@ def main():
 
         app = random.randrange(0, 2, 1)
         url = random.randrange(0, 2, 1)
-        vel = random.randrange(10, 21, 5)
+        vel = random.randrange(10, 19, 3)
         size = random.randrange(3, 6, 1)
         if sys.argv[2] == '1':
             reckless = random.randrange(0, 2, 1)
