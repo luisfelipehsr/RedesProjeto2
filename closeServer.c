@@ -118,7 +118,6 @@ void dropClient(int i, int *clients, fd_set *all_fds) {
 
 /* Recebe uma mensagem e a trata de acordo */
 void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
-	char buf[MAX_LINE];
 	char_car ccar;
 	int clientfd, k, res, tempo_io, tempo_ij, tempo_fo, tempo_fj;
 	message msg;
@@ -158,9 +157,6 @@ void processClient(int i, int *clients, fd_set *all_fds, car *cars) {
 				if (((cars[i].dir == 1)&&(cars[j].x*cars[j].sent < 0)) ||
 					((cars[i].dir == 0)&&(cars[j].y*cars[j].sent < 0))) {
 				    
-					
-
-					
 					if (cars[i].dir == 0) {
 						tempo_io = abs(cars[i].x / cars[i].vel);
 						tempo_fo = abs(tempo_io + (cars[i].tam / cars[i].vel));
