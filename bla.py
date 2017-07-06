@@ -8,7 +8,7 @@ for i in range(8):
     total_parcial = 0
     for j in range(3):
         media = []
-        totaln = 0
+        total = 0
         for k in range(10):
             local_dir = os.getcwd()
             #/home/jtstark/MC833/Projeto2/RedesProjeto2/TesteJoao/00jTest/1/arq0.out
@@ -34,10 +34,12 @@ for i in range(8):
                 pass
 
         for k in range(len(media)):
-            totaln += media[k]
+            total += media[k]
 
-        media_parcial_teste.append(int(totaln/len(media)))
-        
+        print(total)
+        print(len(media))
+        media_parcial_teste.append(int(total/len(media)))
+        print(media_parcial_teste)
 
     for j in range(len(media_parcial_teste)):
         total_parcial += media_parcial_teste[j]
