@@ -21,8 +21,13 @@ INICIADOR = startCars.py
 ##############################################
 # variaveis a mudar de acordo com a execucao #
 ##############################################
-NUM_CARROS = 1				# numero de carros que estarao presentes na simulacao
-HOSTNAME = localhost	#	hostname do servidor principal
+RECKLESS = 0
+HOSTNAME = localhost
+NUM_CARROS = 10
+
+# se vai ter carros reckless, ou nao
+#	hostname do servidor principal
+# numero de carros que estarao presentes na simulacao
 
 #compilacao dos arquivo em c
 compile: $(CLIENT).c $(SERVERRAPIDO).c $(SERVERLENTO).c
@@ -32,16 +37,18 @@ compile: $(CLIENT).c $(SERVERRAPIDO).c $(SERVERLENTO).c
 
 #execucao do servidor de alta latencia
 server1: $(SERVERRAPIDO)
-	./$(SERVERRAPIDO)
+	./$(SERVERRAPIDO) > server1.out
 
 #execucao do servidor de baixa latencia
 server2: $(SERVERLENTO)
-	./$(SERVERLENTO) $(HOSTNAME) $(NUM_CARROS)
+	./$(SERVERLENTO) $(HOSTNAME) $(NUM_CARROS) > server2.out
 
-#gera novos clientes aleatorio e esecuta os primeiros $(NUM_CARROS) deles
-clients: $(CLIENT) $(GERADOR) $(INICIADOR)
-	python3 $(GERADOR)
+#executa os primeiros $(NUM_CARROS) deles
+clients: $(CLIENT) $(INICIADOR)
 	python3 $(INICIADOR) $(NUM_CARROS) $(HOSTNAME)
+
+generate: $(GERADOR)
+	python3 $(GERADOR) $(NUM_CARROS) $(RECKLESS)
 
 #limpa os exeecutaveis C
 clean:
